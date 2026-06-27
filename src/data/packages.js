@@ -1,4 +1,4 @@
-const packages = [
+export const packages = [
         {
             "_id": "6a3e6e51ad33a1e9a255ba82",
             "packageId": "LONAVALA_PKG_1",
