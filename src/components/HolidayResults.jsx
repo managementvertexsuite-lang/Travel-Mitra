@@ -3,16 +3,25 @@ import { useState, useMemo, useEffect } from "react"
 import { formatDate } from "../utils/dateUtils"
 import FilterSidebar from "./FilterSidebar"
 import { getPackagesForDestination } from "../utils/generateDestinationPackages"
+import { getPackagesForCategory } from "../utils/categoryPackages"
+import { HOLIDAY_PACKAGES_HERO_IMAGE } from "../utils/constants"
 
-function generatePackages(destination, duration, travelers) {
-  return getPackagesForDestination(destination, duration)
+function generatePackages(payload) {
+  if (payload.category) {
+    return getPackagesForCategory(payload.category, payload.duration)
+  }
+  return getPackagesForDestination(payload.to, payload.duration)
 }
 
 export default function HolidayResults({ payload, isLoading, onDestinationClick, onBackToHome, onPackageClick }) {
   if (!payload) return null
 
-  const totalTravelers = payload.travelers
-  const allPackages = generatePackages(payload.to, payload.duration, totalTravelers)
+  const totalTravelers = payload.travelers || 2
+  const allPackages = generatePackages(payload)
+
+  const pageTitle = payload.categoryLabel
+    ? payload.categoryLabel
+    : `${payload.to?.city} Holiday Packages`
 
   const [filters, setFilters] = useState({
     duration: [1, 12],
@@ -41,31 +50,36 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="bg-blue-600 py-6 px-4">
-        <div className="max-w-7xl mx-auto">
+      <div
+        className="py-6 px-4 bg-cover bg-center relative"
+        style={{
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.50)), url(${HOLIDAY_PACKAGES_HERO_IMAGE})`,
+        }}
+      >
+        <div className="max-w-7xl mx-auto relative z-10">
           <button
             onClick={onBackToHome}
-            className="flex items-center gap-2 text-white font-semibold mb-4 hover:text-blue-100"
+            className="flex items-center gap-2 text-white font-semibold mb-4 hover:text-gray-200"
           >
             <ChevronLeft size={20} />
             Back to Search
           </button>
           <h1 className="text-3xl font-bold text-white mb-2">
-            {payload.to?.city} Holiday Packages
+            {pageTitle}
           </h1>
-          <p className="text-blue-100">
+          <p className="text-gray-200">
             {totalTravelers} travelers • {payload.duration} days
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <aside className="lg:col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,360px)_1fr] gap-8">
+          <aside className="min-w-0">
             <FilterSidebar filters={filters} setFilters={setFilters} />
           </aside>
 
-          <main className="lg:col-span-4">
+          <main className="min-w-0">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900">
                 All Packages ({isFilterLoading ? "..." : filteredPackages.length})

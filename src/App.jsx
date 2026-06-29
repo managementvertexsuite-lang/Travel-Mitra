@@ -56,7 +56,7 @@ export default function App() {
   if (viewMode === "packageDetail" && selectedPackage) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
-        <MinimalHeader />
+        <MinimalHeader onHomeClick={handleBackToHome} />
         <div className="flex-grow">
           <PackageDetail
             package={selectedPackage}
@@ -71,7 +71,7 @@ export default function App() {
   if (viewMode === "detail" && selectedDestination) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
-        <MinimalHeader />
+        <MinimalHeader onHomeClick={handleBackToHome} />
         <div className="flex-grow">
           <DestinationDetail
             destination={selectedDestination}
@@ -87,7 +87,7 @@ export default function App() {
   if (viewMode === "results" && searchResults) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
-        <MinimalHeader />
+        <MinimalHeader onHomeClick={handleBackToHome} />
         <div className="flex-grow">
           <HolidayResults
             payload={searchResults}
@@ -105,7 +105,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <main className="flex flex-col flex-grow">
-        <HolidaySearchCard onSearch={handleSearch} onDestinationClick={handleDestinationClick} onPackageClick={handlePackageClick} />
+        <HolidaySearchCard
+          onSearch={handleSearch}
+          onCategorySearch={handleSearch}
+          onDestinationClick={handleDestinationClick}
+          onPackageClick={handlePackageClick}
+        />
       </main>
       <Footer />
     </div>

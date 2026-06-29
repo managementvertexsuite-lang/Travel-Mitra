@@ -1,11 +1,15 @@
 import { Plane, User } from "lucide-react";
 
-export default function MinimalHeader() {
+export default function MinimalHeader({ onHomeClick }) {
   return (
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onHomeClick}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <img
               src="https://miro.medium.com/v2/resize:fit:1025/1%2AgCdn4NaRqwe-jqzyPToPXg.jpeg"
               alt="Logo"
@@ -14,7 +18,7 @@ export default function MinimalHeader() {
             <span className="text-gray-900 text-xl font-bold font-serif leading-none tracking-wide">
               Travel Mitra
             </span>
-          </div>
+          </button>
           
           <div className="hidden sm:flex items-center gap-8">
             <a

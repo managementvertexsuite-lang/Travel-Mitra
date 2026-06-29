@@ -68,7 +68,7 @@ export default function FilterSidebar({ filters, setFilters }) {
   const visibleThemes = showMoreThemes ? allThemes : allThemes.slice(0, 4)
 
   return (
-    <div className="bg-white sticky top-28 h-fit max-h-[calc(100vh-120px)] overflow-y-auto w-full">
+    <div className="bg-white sticky top-28 h-fit max-h-[calc(100vh-120px)] overflow-y-auto w-full min-w-[300px] lg:min-w-[340px]">
       <div className="px-5 pt-5 pb-4 border-b border-gray-200">
         <h3 className="text-[13px] font-bold text-gray-600 uppercase tracking-wide">FILTERS</h3>
       </div>
@@ -101,25 +101,23 @@ export default function FilterSidebar({ filters, setFilters }) {
           <div className="flex gap-3 pt-2 pb-2">
             <button
               onClick={() => handleFlightsChange("with")}
-              className={`flex-1 py-3 px-1 border rounded-lg flex flex-col items-center justify-center text-[13px] transition-colors ${
+              className={`flex-1 py-3 px-2 border rounded-lg flex items-center justify-center text-[13px] whitespace-nowrap transition-colors ${
                 filters.flights === "with"
                   ? "border-[#007aff] bg-blue-50 text-[#007aff] font-medium"
                   : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
               }`}
             >
-              <span>With Flight</span>
-              <span>(159)</span>
+              With Flight (159)
             </button>
             <button
               onClick={() => handleFlightsChange("without")}
-              className={`flex-1 py-3 px-1 border rounded-lg flex flex-col items-center justify-center text-[13px] transition-colors ${
+              className={`flex-1 py-3 px-2 border rounded-lg flex items-center justify-center text-[13px] whitespace-nowrap transition-colors ${
                 filters.flights === "without"
                   ? "border-[#007aff] bg-blue-50 text-[#007aff] font-medium"
                   : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
               }`}
             >
-              <span>Without Flight</span>
-              <span>(158)</span>
+              Without Flight (158)
             </button>
           </div>
         </FilterSection>
@@ -245,7 +243,7 @@ function FilterSection({ title, isExpanded, onToggle, children }) {
         onClick={onToggle}
         className="w-full flex items-center justify-between py-4 hover:text-[#007aff] transition-colors"
       >
-        <h4 className="text-[17px] font-bold text-black">{title}</h4>
+        <h4 className="text-[17px] font-bold text-black whitespace-nowrap">{title}</h4>
         {isExpanded ? (
           <ChevronUp size={20} className="text-gray-600" />
         ) : (
@@ -259,15 +257,15 @@ function FilterSection({ title, isExpanded, onToggle, children }) {
 
 function CheckboxRow({ label, count }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer w-full group">
-      <div className="flex items-center gap-3">
+    <label className="flex items-center justify-between cursor-pointer w-full group gap-2">
+      <div className="flex items-center gap-3 min-w-0">
         <input 
           type="checkbox" 
-          className="w-[18px] h-[18px] border-2 border-gray-400 rounded-sm accent-[#007aff] cursor-pointer" 
+          className="w-[18px] h-[18px] border-2 border-gray-400 rounded-sm accent-[#007aff] cursor-pointer flex-shrink-0" 
         />
-        <span className="text-[14px] text-gray-700">{label}</span>
+        <span className="text-[14px] text-gray-700 whitespace-nowrap">{label}</span>
       </div>
-      <span className="text-[14px] text-gray-500">({count})</span>
+      <span className="text-[14px] text-gray-500 whitespace-nowrap flex-shrink-0">({count})</span>
     </label>
   )
 }

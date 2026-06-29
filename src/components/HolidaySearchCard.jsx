@@ -9,6 +9,7 @@ import LocationSelector from "./LocationSelector";
 import CalendarDropdown from "./CalendarDropdown";
 import { formatDate, formatDateISO, getToday } from "../utils/dateUtils";
 import { destinations } from "../data/destinations";
+import { CATEGORY_TABS } from "../utils/categoryPackages";
 
 import banner1 from "../banners/banner1.png";
 import banner2 from "../banners/banner2.png";
@@ -19,12 +20,13 @@ const BANNER_IMAGES = [banner1, banner2, banner3, banner4];
 
 export default function HolidaySearchCard({
   onSearch,
+  onCategorySearch,
   onDestinationClick,
   onPackageClick,
 }) {
-  // Mock user location for carousel packages
   const mockFromLocation = { id: 1, city: "Delhi" };
   const searchCardRef = useRef(null);
+  const [activeTab, setActiveTab] = useState("search");
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -92,6 +94,27 @@ export default function HolidaySearchCard({
     onSearch(payload);
   };
 
+  const handleCategoryTabClick = (tab) => {
+    if (tab.isSearch) {
+      setActiveTab("search");
+      return;
+    }
+
+    setActiveTab(tab.id);
+    const today = new Date();
+    const departureDate = new Date(today);
+    departureDate.setDate(departureDate.getDate() + 5);
+
+    onCategorySearch?.({
+      from: mockFromLocation,
+      category: tab.id,
+      categoryLabel: tab.label,
+      duration: 5,
+      travelers: 2,
+      departureDate: departureDate.toISOString().split("T")[0],
+    });
+  };
+
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -107,7 +130,11 @@ export default function HolidaySearchCard({
 
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 w-full px-6 sm:px-10 py-4 flex justify-between items-center bg-black/40 backdrop-blur-md shadow-lg border-b border-white/10 transition-all">
-          <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 hover:opacity-90 transition-opacity"
+          >
             <img
               src="https://miro.medium.com/v2/resize:fit:1025/1%2AgCdn4NaRqwe-jqzyPToPXg.jpeg"
               alt="Logo"
@@ -116,7 +143,7 @@ export default function HolidaySearchCard({
             <span className="text-white text-xl drop-shadow-md font-bold font-serif leading-none tracking-wide">
               Travel Mitra
             </span>
-          </div>
+          </button>
           <div className="hidden sm:flex items-center gap-8">
             <a
               href="#"
@@ -146,26 +173,26 @@ export default function HolidaySearchCard({
         <div className="relative z-40 flex-grow flex items-center justify-center px-4 w-full max-w-7xl mx-auto pb-16 mb-8">
           <div className="bg-white rounded-xl shadow-2xl relative flex flex-col w-full">
             {/* Tabs */}
-            <div className="flex border-b border-gray-100 bg-[#f8fbff] rounded-t-xl px-2 pt-2">
-              <button className="flex items-center gap-2 px-6 py-3 border-b-2 border-blue-500 text-blue-500 font-bold bg-white rounded-t-lg relative">
-                <Search className="w-4 h-4" />
-                <span>Search</span>
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
-                <span className="text-lg">🌅</span> Honeymoon
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
-                <span className="text-lg">🛂</span> Visa Free Packages
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
-                <span className="text-lg">👥</span> Group Tour Packages
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
-                <span className="text-lg">🚢</span> Disney Cruise
-              </button>
-              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
-                <span className="text-lg">🏝️</span> Last Minute Deals
-              </button>
+            <div className="flex border-b border-gray-100 bg-[#f8fbff] rounded-t-xl px-2 pt-2 overflow-x-auto">
+              {CATEGORY_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleCategoryTabClick(tab)}
+                  className={`flex items-center gap-2 px-6 py-3 font-medium transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "border-b-2 border-blue-500 text-blue-500 font-bold bg-white rounded-t-lg"
+                      : "text-gray-700 hover:text-blue-500"
+                  }`}
+                >
+                  {tab.isSearch ? (
+                    <Search className="w-4 h-4" />
+                  ) : (
+                    <span className="text-lg">{tab.emoji}</span>
+                  )}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
 
             {/* Error Messages */}
