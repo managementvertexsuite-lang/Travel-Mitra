@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { X, Search, MapPin, Loader } from "lucide-react"
+import { Search, LocateFixed, Loader } from "lucide-react"
 import { fetchLocations, fetchPopularCities } from "../services/api"
 
 export default function LocationSelector({ isOpen, onClose, onSelect, title, selectedLocation }) {
@@ -12,8 +12,9 @@ export default function LocationSelector({ isOpen, onClose, onSelect, title, sel
   useEffect(() => {
     if (isOpen) {
       loadData()
+      setSearchQuery(selectedLocation?.city || "")
     }
-  }, [isOpen])
+  }, [isOpen, selectedLocation])
 
   const loadData = async () => {
     setIsLoading(true)
@@ -56,137 +57,115 @@ export default function LocationSelector({ isOpen, onClose, onSelect, title, sel
 
   return (
     <>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={onClose} />
-      )}
-
       <div
-        className={`absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl p-6 z-50 max-h-96 overflow-hidden flex flex-col transition-all duration-200 ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        onClick={(e) => e.stopPropagation()}
+        className={`absolute top-full left-0 mt-2 bg-white rounded-lg shadow-[0_10px_40px_rgb(0,0,0,0.1)] border border-gray-100 w-80 max-h-96 overflow-hidden flex flex-col z-50 transition-all duration-200 ${
+          isOpen ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"
         }`}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-          <h3 className="font-semibold text-dark text-lg">{title}</h3>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X size={20} className="text-muted" />
-          </button>
-        </div>
+        <div className="p-2">
+          {/* Search Bar */}
+          <div className="relative mb-1 flex items-center">
+            <Search className="absolute left-3 text-gray-800 w-4 h-4 font-bold" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full pl-9 pr-4 py-2 border-none outline-none font-bold text-lg text-gray-900 placeholder:text-gray-400 placeholder:font-normal"
+            />
+          </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-3 text-muted w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search cities or airport codes..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-          />
-        </div>
+          <div className="w-full h-[1px] bg-gray-100 my-1"></div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader className="animate-spin text-primary w-6 h-6" />
+          {/* Current Location */}
+          <button className="w-full text-left px-3 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors rounded-md">
+            <div className="text-blue-500 flex items-center justify-center">
+              <LocateFixed size={18} strokeWidth={2.5} />
             </div>
-          ) : searchQuery.trim() ? (
-            <>
-              {filteredLocations.length > 0 ? (
-                <div className="space-y-2">
-                  {filteredLocations.map((location) => (
-                    <LocationItem
-                      key={location.id}
-                      location={location}
-                      isSelected={selectedLocation?.id === location.id}
-                      onClick={() => handleSelect(location)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-muted text-sm">No locations found</p>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              {/* Popular Cities Section */}
-              <div>
-                <h4 className="text-xs font-semibold text-muted uppercase mb-3">
-                  Popular Cities
-                </h4>
-                <div className="space-y-2">
-                  {popularLocs.map((location) => (
-                    <LocationItem
-                      key={location.id}
-                      location={location}
-                      isSelected={selectedLocation?.id === location.id}
-                      onClick={() => handleSelect(location)}
-                    />
-                  ))}
-                </div>
-              </div>
+            <span className="text-gray-800 font-medium text-[15px]">Use Current Location</span>
+          </button>
 
-              {/* All Cities Section */}
-              {allLocations.length > popularLocs.length && (
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <h4 className="text-xs font-semibold text-muted uppercase mb-3">
-                    All Cities
+          <div className="w-full h-[1px] bg-gray-200 my-2"></div>
+
+          {/* Content */}
+          <div className="overflow-y-auto max-h-60 px-1">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader className="animate-spin text-blue-500 w-5 h-5" />
+              </div>
+            ) : searchQuery.trim() && searchQuery.trim() !== selectedLocation?.city ? (
+              <>
+                {filteredLocations.length > 0 ? (
+                  <div className="space-y-0.5">
+                    {filteredLocations.map((location) => (
+                      <LocationItem
+                        key={location.id}
+                        location={location}
+                        onClick={() => handleSelect(location)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 text-sm">No locations found</p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Top Searches Section */}
+                <div>
+                  <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2 mt-1">
+                    Top Searches
                   </h4>
-                  <div className="space-y-2">
-                    {allLocations
-                      .filter((loc) => !popularLocs.find((p) => p.id === loc.id))
-                      .map((location) => (
-                        <LocationItem
-                          key={location.id}
-                          location={location}
-                          isSelected={selectedLocation?.id === location.id}
-                          onClick={() => handleSelect(location)}
-                        />
-                      ))}
+                  <div className="space-y-0.5">
+                    {popularLocs.map((location) => (
+                      <LocationItem
+                        key={location.id}
+                        location={location}
+                        onClick={() => handleSelect(location)}
+                      />
+                    ))}
                   </div>
                 </div>
-              )}
-            </>
-          )}
+
+                {/* All Cities Section */}
+                {allLocations.length > popularLocs.length && (
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">
+                      All Cities
+                    </h4>
+                    <div className="space-y-0.5">
+                      {allLocations
+                        .filter((loc) => !popularLocs.find((p) => p.id === loc.id))
+                        .map((location) => (
+                          <LocationItem
+                            key={location.id}
+                            location={location}
+                            onClick={() => handleSelect(location)}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>
   )
 }
 
-function LocationItem({ location, isSelected, onClick }) {
+function LocationItem({ location, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-3 rounded-lg transition-colors duration-150 ${
-        isSelected
-          ? "bg-blue-50 border-l-4 border-primary"
-          : "hover:bg-gray-50"
-      }`}
+      className="w-full text-left px-2 py-2 text-[15px] text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors rounded-md"
     >
-      <div className="flex items-start gap-3">
-        <MapPin
-          size={16}
-          className={`mt-1 flex-shrink-0 ${
-            isSelected ? "text-primary" : "text-muted"
-          }`}
-        />
-        <div className="flex-1">
-          <p className={`font-medium ${isSelected ? "text-primary" : "text-dark"}`}>
-            {location.city}
-          </p>
-          <p className="text-xs text-muted">
-            {location.code} • {location.state}
-          </p>
-        </div>
-      </div>
+      {location.city}
     </button>
   )
 }

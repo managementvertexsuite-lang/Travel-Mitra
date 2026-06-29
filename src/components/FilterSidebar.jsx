@@ -24,17 +24,17 @@ export default function FilterSidebar({ filters, setFilters }) {
     }))
   }
 
-  const handleDurationChange = (newRange) => {
+  const handleDurationChange = (e) => {
     setFilters((prev) => ({
       ...prev,
-      duration: newRange,
+      duration: [parseInt(e.target.value), prev.duration[1]],
     }))
   }
 
-  const handleBudgetChange = (newRange) => {
+  const handleBudgetChange = (e) => {
     setFilters((prev) => ({
       ...prev,
-      budget: newRange,
+      budget: [parseInt(e.target.value), prev.budget[1]],
     }))
   }
 
@@ -68,304 +68,206 @@ export default function FilterSidebar({ filters, setFilters }) {
   const visibleThemes = showMoreThemes ? allThemes : allThemes.slice(0, 4)
 
   return (
-    <div className="bg-white rounded-2xl p-6 sticky top-28 h-fit space-y-6 border border-gray-200 shadow-lg max-h-[calc(100vh-120px)] overflow-y-auto">
-      <h3 className="text-lg font-bold text-dark">FILTERS</h3>
+    <div className="bg-white sticky top-28 h-fit max-h-[calc(100vh-120px)] overflow-y-auto w-full">
+      <div className="px-5 pt-5 pb-4 border-b border-gray-200">
+        <h3 className="text-[13px] font-bold text-gray-600 uppercase tracking-wide">FILTERS</h3>
+      </div>
 
-      {/* Duration Filter */}
-      <FilterSection
-        title="Duration (in Nights)"
-        isExpanded={expandedSections.duration}
-        onToggle={() => toggleSection("duration")}
-      >
-        <div className="space-y-4">
-          <input
-            type="range"
-            min="1"
-            max="12"
-            value={filters.duration[0]}
-            onChange={(e) =>
-              handleDurationChange([
-                parseInt(e.target.value),
-                filters.duration[1],
-              ])
-            }
-            className="w-full h-2 bg-primary rounded-lg appearance-none cursor-pointer"
-            style={{
-              background: `linear-gradient(to right, #0B5ED7 0%, #0B5ED7 ${
-                ((filters.duration[0] - 1) / 11) * 100
-              }%, #e5e7eb ${((filters.duration[0] - 1) / 11) * 100}%, #e5e7eb 100%)`,
-            }}
-          />
-          <div className="flex items-center justify-between text-sm font-semibold text-primary">
-            <span>{filters.duration[0]}N</span>
-            <span>{filters.duration[1]}N</span>
+      <div className="px-5 pb-6">
+        {/* Duration Filter */}
+        <FilterSection
+          title="Duration (in Nights)"
+          isExpanded={expandedSections.duration}
+          onToggle={() => toggleSection("duration")}
+        >
+          <div className="pt-2 pb-4">
+            <div className="relative w-full h-1.5 bg-[#007aff] rounded-full mb-3 flex items-center">
+              <div className="absolute -left-2 w-6 h-6 bg-white border border-gray-200 shadow-sm rounded-full"></div>
+              <div className="absolute -right-2 w-6 h-6 bg-white border border-gray-200 shadow-sm rounded-full"></div>
+            </div>
+            <div className="flex items-center justify-between text-[13px] text-gray-600 font-medium">
+              <span>2N</span>
+              <span>10N</span>
+            </div>
           </div>
-          <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">&lt; 4N</span>
-              <span className="text-primary font-semibold">(44)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">4N - 5N</span>
-              <span className="text-primary font-semibold">(28)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">5N - 6N</span>
-              <span className="text-primary font-semibold">(48)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">&gt; 6N</span>
-              <span className="text-primary font-semibold">(100)</span>
-            </label>
-          </div>
-        </div>
-      </FilterSection>
+        </FilterSection>
 
-      {/* Flights Filter */}
-      <FilterSection
-        title="Flights"
-        isExpanded={expandedSections.flights}
-        onToggle={() => toggleSection("flights")}
-      >
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleFlightsChange("with")}
-            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition-all border ${
-              filters.flights === "with"
-                ? "bg-primary text-white border-primary"
-                : "bg-white text-primary border-primary hover:bg-blue-50"
-            }`}
-          >
-            With Flight (190)
-          </button>
-          <button
-            onClick={() => handleFlightsChange("without")}
-            className={`flex-1 px-3 py-2 rounded-lg font-semibold text-sm transition-all border ${
-              filters.flights === "without"
-                ? "bg-primary text-white border-primary"
-                : "bg-white text-primary border-primary hover:bg-blue-50"
-            }`}
-          >
-            Without Flight (212)
-          </button>
-        </div>
-      </FilterSection>
-
-      {/* Budget Filter */}
-      <FilterSection
-        title="Budget (per person)"
-        isExpanded={expandedSections.budget}
-        onToggle={() => toggleSection("budget")}
-      >
-        <div className="space-y-4">
-          <input
-            type="range"
-            min="0"
-            max="100000"
-            step="5000"
-            value={filters.budget[0]}
-            onChange={(e) =>
-              handleBudgetChange([
-                parseInt(e.target.value),
-                filters.budget[1],
-              ])
-            }
-            className="w-full h-2 bg-primary rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex items-center justify-between text-sm font-semibold text-primary">
-            <span>₹{filters.budget[0].toLocaleString()}</span>
-            <span>₹{filters.budget[1].toLocaleString()}</span>
-          </div>
-          <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">&lt; ₹25,000</span>
-              <span className="text-primary font-semibold">(94)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">₹25,000 - ₹30,000</span>
-              <span className="text-primary font-semibold">(46)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">₹30,000 - ₹45,000</span>
-              <span className="text-primary font-semibold">(72)</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark">&gt; ₹45,000</span>
-              <span className="text-primary font-semibold">(65)</span>
-            </label>
-          </div>
-        </div>
-      </FilterSection>
-
-      {/* Hotel Category */}
-      <FilterSection
-        title="Hotel Category"
-        isExpanded={expandedSections.hotel}
-        onToggle={() => toggleSection("hotel")}
-      >
-        <div className="flex gap-2 flex-wrap">
-          {[
-            { label: "<3★", count: 1 },
-            { label: "3★", count: 147 },
-            { label: "4★", count: 39 },
-            { label: "5★", count: 53 },
-          ].map((hotel) => (
+        {/* Flights Filter */}
+        <FilterSection
+          title="Flights"
+          isExpanded={expandedSections.flights}
+          onToggle={() => toggleSection("flights")}
+        >
+          <div className="flex gap-3 pt-2 pb-2">
             <button
-              key={hotel.label}
-              className="px-3 py-2 rounded-lg border border-gray-300 text-dark text-sm font-medium hover:bg-gray-50 transition-colors"
+              onClick={() => handleFlightsChange("with")}
+              className={`flex-1 py-3 px-1 border rounded-lg flex flex-col items-center justify-center text-[13px] transition-colors ${
+                filters.flights === "with"
+                  ? "border-[#007aff] bg-blue-50 text-[#007aff] font-medium"
+                  : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
             >
-              <div className="text-center">
-                <div>{hotel.label}</div>
-                <div className="text-xs text-primary font-semibold">({hotel.count})</div>
-              </div>
+              <span>With Flight</span>
+              <span>(159)</span>
             </button>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Cities */}
-      <FilterSection
-        title="Cities"
-        isExpanded={expandedSections.cities}
-        onToggle={() => toggleSection("cities")}
-      >
-        <div className="space-y-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 w-4 h-4 text-muted" />
-            <input
-              type="text"
-              placeholder="Search cities"
-              value={citiesSearch}
-              onChange={(e) => setCitiesSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary"
-            />
+            <button
+              onClick={() => handleFlightsChange("without")}
+              className={`flex-1 py-3 px-1 border rounded-lg flex flex-col items-center justify-center text-[13px] transition-colors ${
+                filters.flights === "without"
+                  ? "border-[#007aff] bg-blue-50 text-[#007aff] font-medium"
+                  : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <span>Without Flight</span>
+              <span>(158)</span>
+            </button>
           </div>
-          <div className="space-y-2">
-            {visibleCities.map((city) => (
-              <label key={city.name} className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-                <span className="text-dark text-sm">{city.name}</span>
-                <span className="text-primary font-semibold text-sm">({city.count})</span>
-              </label>
+        </FilterSection>
+
+        {/* Budget Filter */}
+        <FilterSection
+          title="Budget (per person)"
+          isExpanded={expandedSections.budget}
+          onToggle={() => toggleSection("budget")}
+        >
+          <div className="pt-2 pb-2">
+            <div className="relative w-full h-1.5 bg-[#007aff] rounded-full mb-3 flex items-center">
+              <div className="absolute -left-2 w-6 h-6 bg-white border border-gray-200 shadow-sm rounded-full"></div>
+              <div className="absolute -right-2 w-6 h-6 bg-white border border-gray-200 shadow-sm rounded-full"></div>
+            </div>
+            <div className="flex items-center justify-between text-[13px] text-gray-600 font-medium mb-6">
+              <span>₹0</span>
+              <span>₹105,000</span>
+            </div>
+            
+            <div className="space-y-3">
+              <CheckboxRow label="< ₹40,000" count="68" />
+              <CheckboxRow label="₹40,000 - ₹50,000" count="69" />
+              <CheckboxRow label="₹50,000 - ₹60,000" count="56" />
+              <CheckboxRow label="> ₹60,000" count="47" />
+            </div>
+          </div>
+        </FilterSection>
+
+        {/* Hotel Category */}
+        <FilterSection
+          title="Hotel Category"
+          isExpanded={expandedSections.hotel}
+          onToggle={() => toggleSection("hotel")}
+        >
+          <div className="flex gap-2 flex-wrap pt-2">
+            {[
+              { label: "<3★", count: 1 },
+              { label: "3★", count: 147 },
+              { label: "4★", count: 39 },
+              { label: "5★", count: 53 },
+            ].map((hotel) => (
+              <button
+                key={hotel.label}
+                className="px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                <div className="text-center">
+                  <div>{hotel.label}</div>
+                  <div className="text-[11px] text-gray-400 mt-0.5">({hotel.count})</div>
+                </div>
+              </button>
             ))}
           </div>
-          {!showMoreCities && (
-            <button
-              onClick={() => setShowMoreCities(true)}
-              className="text-primary font-semibold text-sm hover:underline"
-            >
-              Show More
-            </button>
-          )}
-        </div>
-      </FilterSection>
+        </FilterSection>
 
-      {/* Buy Now, Pay Later */}
-      <FilterSection
-        title="Buy Now, Pay Later"
-        isExpanded={expandedSections.buyNow}
-        onToggle={() => toggleSection("buyNow")}
-      >
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-          <span className="text-dark text-sm">Book @ ₹2,000</span>
-          <span className="text-primary font-semibold text-sm">(40)</span>
-        </label>
-      </FilterSection>
+        {/* Cities */}
+        <FilterSection
+          title="Cities"
+          isExpanded={expandedSections.cities}
+          onToggle={() => toggleSection("cities")}
+        >
+          <div className="space-y-4 pt-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search cities"
+                value={citiesSearch}
+                onChange={(e) => setCitiesSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-[14px] focus:outline-none focus:border-[#007aff]"
+              />
+            </div>
+            <div className="space-y-4">
+              {visibleCities.map((city) => (
+                <CheckboxRow key={city.name} label={city.name} count={city.count} />
+              ))}
+            </div>
+            {!showMoreCities && (
+              <button
+                onClick={() => setShowMoreCities(true)}
+                className="text-[#007aff] font-semibold text-[13px] hover:underline"
+              >
+                Show More
+              </button>
+            )}
+          </div>
+        </FilterSection>
 
-      {/* Themes */}
-      <FilterSection
-        title="Themes"
-        isExpanded={expandedSections.themes}
-        onToggle={() => toggleSection("themes")}
-      >
-        <div className="space-y-2">
-          {visibleThemes.map((theme) => (
-            <label key={theme.name} className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-              <span className="text-dark text-sm">{theme.name}</span>
-              <span className="text-primary font-semibold text-sm">({theme.count})</span>
-            </label>
-          ))}
-        </div>
-        {!showMoreThemes && (
-          <button
-            onClick={() => setShowMoreThemes(true)}
-            className="text-primary font-semibold text-sm hover:underline mt-2"
-          >
-            Show More
-          </button>
-        )}
-      </FilterSection>
+        {/* Themes */}
+        <FilterSection
+          title="Themes"
+          isExpanded={expandedSections.themes}
+          onToggle={() => toggleSection("themes")}
+        >
+          <div className="space-y-4 pt-2">
+            {visibleThemes.map((theme) => (
+              <CheckboxRow key={theme.name} label={theme.name} count={theme.count} />
+            ))}
+            {!showMoreThemes && (
+              <button
+                onClick={() => setShowMoreThemes(true)}
+                className="text-[#007aff] font-semibold text-[13px] hover:underline mt-2"
+              >
+                Show More
+              </button>
+            )}
+          </div>
+        </FilterSection>
 
-      {/* Package Type */}
-      <FilterSection
-        title="Package Type"
-        isExpanded={expandedSections.packageType}
-        onToggle={() => toggleSection("packageType")}
-      >
-        <div className="flex gap-2 flex-wrap">
-          {[
-            { label: "Customizable", count: 213 },
-            { label: "Group Package", count: 8 },
-          ].map((type) => (
-            <button
-              key={type.label}
-              className="px-3 py-2 rounded-lg border border-gray-300 text-dark text-sm font-medium hover:bg-gray-50 transition-colors"
-            >
-              <div className="text-center">
-                <div>{type.label}</div>
-                <div className="text-xs text-primary font-semibold">({type.count})</div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </FilterSection>
-
-      {/* Premium Packages */}
-      <FilterSection
-        title="Premium Packages"
-        isExpanded={expandedSections.premium}
-        onToggle={() => toggleSection("premium")}
-      >
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" className="w-4 h-4 accent-primary rounded" />
-          <span className="text-dark text-sm">Premium packages</span>
-          <span className="text-primary font-semibold text-sm">(41)</span>
-        </label>
-      </FilterSection>
-
-      {/* Reset Filters */}
-      <button className="w-full py-3 px-4 border-2 border-gray-300 rounded-lg text-dark font-semibold hover:bg-gray-50 transition-colors text-sm">
-        Clear Filters
-      </button>
+        {/* Clear Filters */}
+        <button className="w-full mt-6 py-3 px-4 border border-[#007aff] text-[#007aff] rounded-lg font-bold hover:bg-blue-50 transition-colors text-[14px]">
+          CLEAR FILTERS
+        </button>
+      </div>
     </div>
   )
 }
 
 function FilterSection({ title, isExpanded, onToggle, children }) {
   return (
-    <div className="border-b border-gray-200 pb-4">
+    <div className="border-b border-gray-200 pb-5 mb-2">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-2 hover:text-primary transition-colors"
+        className="w-full flex items-center justify-between py-4 hover:text-[#007aff] transition-colors"
       >
-        <h4 className="font-bold text-dark text-sm">{title}</h4>
+        <h4 className="text-[17px] font-bold text-black">{title}</h4>
         {isExpanded ? (
-          <ChevronUp size={18} className="text-muted" />
+          <ChevronUp size={20} className="text-gray-600" />
         ) : (
-          <ChevronDown size={18} className="text-muted" />
+          <ChevronDown size={20} className="text-gray-600" />
         )}
       </button>
-      {isExpanded && <div className="mt-3">{children}</div>}
+      {isExpanded && <div className="mt-1">{children}</div>}
     </div>
+  )
+}
+
+function CheckboxRow({ label, count }) {
+  return (
+    <label className="flex items-center justify-between cursor-pointer w-full group">
+      <div className="flex items-center gap-3">
+        <input 
+          type="checkbox" 
+          className="w-[18px] h-[18px] border-2 border-gray-400 rounded-sm accent-[#007aff] cursor-pointer" 
+        />
+        <span className="text-[14px] text-gray-700">{label}</span>
+      </div>
+      <span className="text-[14px] text-gray-500">({count})</span>
+    </label>
   )
 }

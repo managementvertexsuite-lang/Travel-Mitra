@@ -4,6 +4,7 @@ import HolidaySearchCard from './components/HolidaySearchCard'
 import HolidayResults from './components/HolidayResults'
 import DestinationDetail from './components/DestinationDetail'
 import PackageDetail from './components/PackageDetail'
+import Footer from './components/Footer'
 
 export default function App() {
   const [searchResults, setSearchResults] = useState(null)
@@ -54,51 +55,59 @@ export default function App() {
 
   if (viewMode === "packageDetail" && selectedPackage) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-white">
+      <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
         <MinimalHeader />
-        <PackageDetail
-          package={selectedPackage}
-          onBack={handleBackFromPackage}
-        />
+        <div className="flex-grow">
+          <PackageDetail
+            package={selectedPackage}
+            onBack={handleBackFromPackage}
+          />
+        </div>
+        <Footer />
       </div>
     )
   }
 
   if (viewMode === "detail" && selectedDestination) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-white">
+      <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
         <MinimalHeader />
-        <DestinationDetail
-          destination={selectedDestination}
-          onBack={handleBackClick}
-          onPackageClick={handlePackageClick}
-        />
+        <div className="flex-grow">
+          <DestinationDetail
+            destination={selectedDestination}
+            onBack={handleBackClick}
+            onPackageClick={handlePackageClick}
+          />
+        </div>
+        <Footer />
       </div>
     )
   }
 
   if (viewMode === "results" && searchResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-white">
+      <div className="min-h-screen bg-gradient-to-b from-background to-white flex flex-col">
         <MinimalHeader />
-        <HolidayResults
-          payload={searchResults}
-          isLoading={isLoading}
-          onDestinationClick={handleDestinationClick}
-          onBackToHome={handleBackToHome}
-          onPackageClick={handlePackageClick}
-        />
+        <div className="flex-grow">
+          <HolidayResults
+            payload={searchResults}
+            isLoading={isLoading}
+            onDestinationClick={handleDestinationClick}
+            onBackToHome={handleBackToHome}
+            onPackageClick={handlePackageClick}
+          />
+        </div>
+        <Footer />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-white">
-      <MinimalHeader />
-
-      <main className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
+      <main className="flex flex-col flex-grow">
         <HolidaySearchCard onSearch={handleSearch} onDestinationClick={handleDestinationClick} onPackageClick={handlePackageClick} />
       </main>
+      <Footer />
     </div>
   )
 }

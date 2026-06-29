@@ -19,6 +19,11 @@ body,
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  background: linear-gradient(180deg, #ffffff 0%, #f4f7fd 100%);
+  color: #1a2d52;
+}
+
 .shimmer-loading {
   background: linear-gradient(
     90deg,
@@ -114,4 +119,16 @@ input:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #888;
+}
+
+.brand-logo {
+  @apply flex items-center gap-1;
+}
+
+.brand-logo__word {
+  @apply text-primary font-bold tracking-tight;
+}
+
+.brand-logo__badge {
+  @apply inline-flex items-center justify-center rounded-2xl bg-accent text-white px-3 py-1;
 }

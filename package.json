@@ -10,32 +10,18 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-<<<<<<< HEAD
     "axios": "^1.6.0",
     "lucide-react": "^0.378.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-=======
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.378.0",
-    "axios": "^1.6.0"
->>>>>>> e6db14296a5319572f359d62bdf1e74552c3325b
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
-<<<<<<< HEAD
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.1",
     "vite": "^5.4.21"
-=======
-    "vite": "^5.0.8",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8.4.32",
-    "autoprefixer": "^10.4.16"
->>>>>>> e6db14296a5319572f359d62bdf1e74552c3325b
   }
 }

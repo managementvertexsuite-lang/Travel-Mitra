@@ -1,85 +1,34 @@
-import { MapPin, Star, Clock, ChevronRight, ChevronLeft } from "lucide-react"
+import { MapPin, Star, Clock, ChevronRight, ChevronLeft, Check } from "lucide-react"
 import { useState, useMemo, useEffect } from "react"
 import { formatDate } from "../utils/dateUtils"
 import FilterSidebar from "./FilterSidebar"
-
-const DESTINATION_PACKAGES = {
-  "Delhi": [
-    { name: "Delhi Heritage Tour", image: "🏛️", highlight: "Historic monuments" },
-    { name: "Delhi & Agra Gateway", image: "🕌", highlight: "Cultural sites" },
-    { name: "Old Delhi Food Walk", image: "🍜", highlight: "Street food adventure" },
-    { name: "Delhi Luxury Escape", image: "✨", highlight: "5-star experience" },
-    { name: "Delhi Weekend Getaway", image: "🎒", highlight: "Quick escape" },
-    { name: "Delhi Photography Tour", image: "📸", highlight: "Capture the city" },
-  ],
-  "Mumbai": [
-    { name: "Mumbai City Tour", image: "🏙️", highlight: "Bollywood & beaches" },
-    { name: "Mumbai Coastal Escape", image: "🌊", highlight: "Beach hopping" },
-    { name: "Gateway of India", image: "🌅", highlight: "Iconic monument" },
-    { name: "Mumbai Luxury Retreat", image: "💎", highlight: "Premium hotels" },
-    { name: "Mumbai Food Trail", image: "🍛", highlight: "Street cuisine" },
-    { name: "Mumbai Weekend Plan", image: "🎉", highlight: "Nightlife & culture" },
-  ],
-  "Bengaluru": [
-    { name: "Bengaluru Tech City Tour", image: "💻", highlight: "Innovation hub" },
-    { name: "Bengaluru Garden Walk", image: "🌸", highlight: "Parks & nature" },
-    { name: "Bengaluru Nightlife", image: "🌃", highlight: "Bars & clubs" },
-    { name: "Bengaluru Coffee Trail", image: "☕", highlight: "Café culture" },
-    { name: "Bengaluru Wellness", image: "🧘", highlight: "Spa & yoga" },
-    { name: "Bengaluru Adventure", image: "🧗", highlight: "Outdoor activities" },
-  ],
-  "Kashmir": [
-    { name: "Amazing Kashmir Vacay with Gulmarg", image: "❄️", highlight: "Skiing & gondola" },
-    { name: "Mystical Kashmir Trip with Houseboat", image: "🛶", highlight: "Boating & culture" },
-    { name: "Luxury Kashmir Experience", image: "👑", highlight: "5-star luxury" },
-    { name: "Budget Kashmir Gateway", image: "🎒", highlight: "Budget friendly" },
-    { name: "Adventure Kashmir Trek", image: "🥾", highlight: "Trekking & camping" },
-    { name: "Honeymoon Paradise Kashmir", image: "💑", highlight: "Romantic getaway" },
-  ],
-  "Kerala": [
-    { name: "Kerala Backwaters Cruise", image: "🚤", highlight: "Houseboat luxury" },
-    { name: "Kerala Beach Paradise", image: "🏖️", highlight: "Pristine beaches" },
-    { name: "Ayurveda & Wellness", image: "🧘", highlight: "Spa & healing" },
-    { name: "Kerala Hill Stations", image: "🏔️", highlight: "Mountain retreat" },
-    { name: "Kerala Adventure Trail", image: "🥾", highlight: "Trekking & nature" },
-    { name: "Kerala Honeymoon Package", image: "💑", highlight: "Romantic escape" },
-  ],
-  "Himachal": [
-    { name: "Himachal Trekking Adventure", image: "🥾", highlight: "Mountain trails" },
-    { name: "Himachal Valley Escape", image: "🏞️", highlight: "Scenic valleys" },
-    { name: "Manali Adventure Package", image: "🧗", highlight: "Adventure sports" },
-    { name: "Himachal Wildlife Tour", image: "🦌", highlight: "Nature & wildlife" },
-    { name: "Shimla Heritage Tour", image: "🏛️", highlight: "Colonial charm" },
-    { name: "Himachal Photography Special", image: "📸", highlight: "Picture perfect" },
-  ],
-  "Goa": [
-    { name: "Goa Beach Paradise", image: "🏖️", highlight: "Beach clubs & parties" },
-    { name: "Goa Heritage Tour", image: "🏛️", highlight: "Portuguese history" },
-    { name: "Goa Water Sports Adventure", image: "🏄", highlight: "Watersports" },
-    { name: "Goa Wellness Retreat", image: "🧘", highlight: "Spa & yoga" },
-    { name: "Goa Honeymoon Special", image: "💑", highlight: "Romantic beaches" },
-    { name: "Goa Family Fun", image: "👨‍👩‍👧‍👦", highlight: "Family activities" },
-  ],
-}
+import { packages } from "../data/packages"
 
 function generatePackages(destination, duration, travelers) {
-  const destName = destination?.city || "Delhi"
-  const basePackages = DESTINATION_PACKAGES[destName] || DESTINATION_PACKAGES["Delhi"]
-  const durationInNights = Math.max(1, duration - 1)
+  const destName = destination?.city?.toUpperCase() || "BALI"
+  let basePackages = packages.filter(pkg => pkg.destinationId === destName)
+  
+  if (!basePackages || basePackages.length === 0) {
+    basePackages = packages // Fallback to all packages if destination not found
+  }
+
+  const durationInNights = duration ? Math.max(1, duration - 1) : 5
 
   return basePackages.map((pkg, idx) => ({
-    id: idx + 1,
-    name: pkg.name,
-    destination: destName,
-    price: Math.floor(Math.random() * 40000 + 15000),
-    originalPrice: Math.floor(Math.random() * 60000 + 25000),
-    rating: parseFloat((Math.random() * 0.4 + 4.5).toFixed(1)),
-    reviews: Math.floor(Math.random() * 500 + 100),
-    duration: duration,
-    nights: durationInNights,
-    image: pkg.image,
-    highlight: pkg.highlight,
-    activities: ["Adventure", "Culture", "Food Tour"].slice(0, Math.floor(Math.random() * 3 + 1)),
+    id: pkg.packageId || idx + 1,
+    name: pkg.packageName,
+    destination: destination?.city || "Bali",
+    price: pkg.minBudget || Math.floor(Math.random() * 40000 + 15000),
+    originalPrice: pkg.maxBudget || Math.floor(Math.random() * 60000 + 25000),
+    rating: pkg.rating || parseFloat((Math.random() * 0.4 + 4.5).toFixed(1)),
+    reviews: pkg.totalReviews || Math.floor(Math.random() * 500 + 100),
+    duration: duration || pkg.durationDays,
+    nights: duration ? durationInNights : pkg.durationNights,
+    image: pkg.coverImage || (pkg.gallery && pkg.gallery[0]),
+    itinerary: `${duration ? durationInNights : pkg.durationNights}N ${destination?.city || "Bali"}`,
+    inclusions: pkg.inclusions || ["Round Trip Flights", "3 Star Hotels", "7 Activities", "Intercity Car Transfers", "Airport Transfers", "Selected Meals"],
+    highlights: pkg.highlights || ["Tea Tasting Session at Local Tea lounge", "Complimentary 1 Lunch or refreshment on Day 1", "Tour Manager"],
+    gallery: pkg.gallery || [],
   }))
 }
 
@@ -202,59 +151,69 @@ function PackageSkeletonLoader() {
 }
 
 function HolidayCard({ package: pkg, travelers, onClick }) {
-  const discount = Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100)
   const totalPrice = pkg.price * travelers
 
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className="relative bg-gradient-to-br from-blue-400 to-blue-600 h-40 flex items-center justify-center">
-        <span className="text-6xl">{pkg.image}</span>
-        {discount > 0 && (
-          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-            {discount}% OFF
-          </div>
-        )}
+      <div className={`relative h-56 flex items-center justify-center`}
+        style={{
+          backgroundImage: `url('${pkg.image}')`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute top-4 left-0 bg-white text-purple-700 px-3 py-1 text-xs font-bold rounded-r-lg border border-purple-200 border-l-0 shadow-sm">
+          Deal of the day
+        </div>
       </div>
 
-      <div className="p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-2">{pkg.name}</h3>
-        <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm mb-3">
-          <MapPin size={16} />
-          {pkg.destination}
-        </div>
-
-        <p className="text-sm text-gray-600 mb-3 italic">{pkg.highlight}</p>
-
-        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
-          <div className="flex items-center gap-1">
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="font-semibold text-gray-900 text-sm">{pkg.rating}</span>
+      <div className="p-5">
+        <div className="flex justify-between items-start gap-4 mb-1">
+          <h3 className="text-xl font-black text-black leading-tight">{pkg.name}</h3>
+          <div className="border border-blue-800 text-blue-900 px-1.5 py-0.5 rounded text-[13px] font-semibold whitespace-nowrap">
+            {pkg.nights}N/{pkg.duration}D
           </div>
-          <span className="text-xs text-gray-500">({pkg.reviews})</span>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          <Clock size={16} />
-          {pkg.duration}D / {pkg.nights}N
+        <p className="text-gray-500 text-[15px] mb-4">{pkg.itinerary}</p>
+
+        <hr className="border-t border-gray-200 my-4" />
+
+        <div className="grid grid-cols-2 gap-y-2.5 mb-5">
+          {pkg.inclusions.slice(0, 6).map((inc, i) => (
+            <div key={i} className="flex items-center gap-2 text-[14px] text-gray-600 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-gray-500 flex-shrink-0"></span>
+              <span className="truncate">{inc}</span>
+            </div>
+          ))}
         </div>
 
-        <div className="mb-4">
-          <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-2xl font-bold text-blue-600">₹{pkg.price.toLocaleString()}</span>
-            <span className="text-sm text-gray-500 line-through">₹{pkg.originalPrice.toLocaleString()}</span>
-          </div>
-          <p className="text-xs text-gray-500 mb-2">per person</p>
-          <p className="text-sm font-semibold text-gray-900">
-            Total: ₹{totalPrice.toLocaleString()}
+        <div className="flex flex-col gap-2 mb-6">
+          {pkg.highlights.slice(0, 3).map((hl, i) => (
+            <div key={i} className="flex items-start gap-2 text-[14px] text-teal-700 font-medium">
+              <Check className="w-4 h-4 mt-0.5 text-teal-600 flex-shrink-0" strokeWidth={3} />
+              <span className="leading-snug">{hl}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#f2f4f7] rounded-xl p-4 flex justify-between items-center border border-gray-100">
+          <p className="text-gray-600 text-[13px] max-w-[50%] leading-tight font-medium">
+            This price is lower than the average price in July
           </p>
+          <div className="text-right flex flex-col items-end">
+            <div className="flex items-baseline gap-1">
+              <span className="text-[22px] font-black text-black">₹{pkg.price.toLocaleString()}</span>
+              <span className="text-[13px] text-gray-500 font-medium">/Person</span>
+            </div>
+            <div className="text-[13px] text-gray-500 font-medium mt-0.5">
+              Total Price ₹{totalPrice.toLocaleString()}
+            </div>
+          </div>
         </div>
-
-        <button className="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-all">
-          View Details
-        </button>
       </div>
     </div>
   )

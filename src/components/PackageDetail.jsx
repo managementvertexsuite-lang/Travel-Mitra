@@ -1,30 +1,96 @@
-import { ChevronLeft, Clock, MapPin, Star, Users, Check, AlertCircle } from "lucide-react"
-import { useState } from "react"
+import {
+  ChevronLeft,
+  Clock,
+  MapPin,
+  Star,
+  Users,
+  Check,
+  AlertCircle,
+  Scissors,
+  Image as ImageIcon,
+} from "lucide-react";
+import { useState } from "react";
 
 export default function PackageDetail({ package: pkg, onBack }) {
-  if (!pkg) return null
+  if (!pkg) return null;
 
-  const [activeTab, setActiveTab] = useState("itinerary")
-  const discount = Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100)
+  const [activeTab, setActiveTab] = useState("itinerary");
+  const discount = Math.round(
+    ((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100,
+  );
 
   return (
     <div className="bg-white min-h-screen">
-      {/* Hero Section */}
-      <div className="relative h-80 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center overflow-hidden">
-        <div className="text-9xl opacity-20">{pkg.image}</div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <h1 className="text-4xl font-bold text-white mb-2 text-center">{pkg.name}</h1>
-          <p className="text-lg text-blue-100">{pkg.destination}</p>
-        </div>
-
-        {/* Back Button */}
+      {/* Hero Header */}
+      <div className="max-w-[1200px] mx-auto px-4 pt-4 pb-4">
         <button
           onClick={onBack}
-          className="absolute top-6 left-6 bg-white text-blue-600 px-4 py-3 rounded-full hover:bg-gray-100 transition-all flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl"
+          className="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 font-semibold text-sm mb-4"
         >
-          <ChevronLeft size={20} />
-          Back
+          <ChevronLeft size={16} /> Back to Results
         </button>
+
+        <h1 className="text-3xl font-bold text-black mb-3">{pkg.name}</h1>
+        <div className="flex items-center gap-4 text-sm text-gray-700">
+          <div className="flex items-center gap-1 border border-gray-300 rounded px-2 py-1 bg-white shadow-sm">
+            <Scissors size={14} className="text-gray-500" />
+            <span className="font-semibold text-xs text-gray-700">
+              Customizable
+            </span>
+          </div>
+          <div className="border border-gray-300 rounded px-2 py-1 font-semibold text-xs text-gray-700 bg-white shadow-sm">
+            {pkg.nights}N/{pkg.duration}D
+          </div>
+          <div className="flex items-center font-semibold text-gray-600 text-sm">
+            {pkg.itinerary || `${pkg.nights}N ${pkg.destination}`}
+          </div>
+        </div>
+      </div>
+
+      {/* Hero Gallery Grid */}
+      <div className="max-w-[1200px] mx-auto px-4 mb-8">
+        <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[420px]">
+          {/* Main Large Image */}
+          <div className="col-span-2 row-span-2 overflow-hidden rounded-l-xl">
+            <img
+              src={pkg.gallery?.[0] || pkg.image}
+              alt="Main"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+
+          {/* Top Right Images */}
+          <div className="col-span-1 row-span-1 overflow-hidden">
+            <img
+              src={pkg.gallery?.[1] || pkg.image}
+              alt="Gallery 1"
+              className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+            />
+          </div>
+          <div className="col-span-1 row-span-1 overflow-hidden rounded-tr-xl">
+            <img
+              src={pkg.gallery?.[2] || pkg.image}
+              alt="Gallery 2"
+              className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+            />
+          </div>
+
+          {/* Bottom Right Images */}
+          <div className="col-span-1 row-span-1 overflow-hidden relative group">
+            <img
+              src={pkg.gallery?.[3] || pkg.image}
+              alt="Activities"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+          <div className="col-span-1 row-span-1 overflow-hidden rounded-br-xl relative group">
+            <img
+              src={pkg.gallery?.[4] || pkg.image}
+              alt="Property"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -63,11 +129,11 @@ export default function PackageDetail({ package: pkg, onBack }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ItineraryTab({ package: pkg }) {
-  const days = generateItinerary(pkg.destination, pkg.duration)
+  const days = generateItinerary(pkg.destination, pkg.duration);
 
   return (
     <div className="space-y-6">
@@ -79,7 +145,8 @@ function ItineraryTab({ package: pkg }) {
           <span className="text-gray-700 font-semibold">Trip Duration</span>
         </div>
         <p className="text-gray-600 text-sm">
-          {pkg.nights} nights stay with multiple activities and guided tours included
+          {pkg.nights} nights stay with multiple activities and guided tours
+          included
         </p>
       </div>
 
@@ -87,7 +154,7 @@ function ItineraryTab({ package: pkg }) {
         <DayPlan key={day.day} day={day} />
       ))}
     </div>
-  )
+  );
 }
 
 function DayPlan({ day }) {
@@ -110,7 +177,9 @@ function DayPlan({ day }) {
               <div className="w-3 h-3 rounded-full bg-blue-600 mt-1.5"></div>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-1">{activity.title}</h4>
+              <h4 className="font-semibold text-gray-900 mb-1">
+                {activity.title}
+              </h4>
               <p className="text-sm text-gray-600">{activity.description}</p>
             </div>
           </div>
@@ -118,12 +187,14 @@ function DayPlan({ day }) {
 
         {day.hotel && (
           <div className="bg-blue-50 p-4 rounded-lg mt-4 border border-blue-200">
-            <p className="text-sm font-semibold text-gray-900">🏨 {day.hotel}</p>
+            <p className="text-sm font-semibold text-gray-900">
+              🏨 {day.hotel}
+            </p>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 function PoliciesTab() {
@@ -155,9 +226,16 @@ function PoliciesTab() {
     },
     {
       title: "Inclusions & Exclusions",
-      items: ["✓ Accommodation as per itinerary", "✓ All activities mentioned", "✓ Daily breakfast", "✗ Airfare", "✗ Meals not specified", "✗ Travel insurance"],
+      items: [
+        "✓ Accommodation as per itinerary",
+        "✓ All activities mentioned",
+        "✓ Daily breakfast",
+        "✗ Airfare",
+        "✗ Meals not specified",
+        "✗ Travel insurance",
+      ],
     },
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -167,7 +245,11 @@ function PoliciesTab() {
             <AlertCircle size={20} className="text-blue-600" />
             {policy.title}
           </h3>
-          {policy.content && <p className="text-gray-600 text-sm leading-relaxed">{policy.content}</p>}
+          {policy.content && (
+            <p className="text-gray-600 text-sm leading-relaxed">
+              {policy.content}
+            </p>
+          )}
           {policy.items && (
             <div className="grid grid-cols-2 gap-3 mt-3">
               {policy.items.map((item, i) => (
@@ -180,7 +262,7 @@ function PoliciesTab() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 function SummaryTab({ package: pkg }) {
@@ -192,7 +274,9 @@ function SummaryTab({ package: pkg }) {
         <div className="space-y-3 border-t pt-4">
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Destination</span>
-            <span className="font-semibold text-gray-900">{pkg.destination}</span>
+            <span className="font-semibold text-gray-900">
+              {pkg.destination}
+            </span>
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Duration</span>
@@ -231,23 +315,27 @@ function SummaryTab({ package: pkg }) {
       <div className="bg-red-50 rounded-lg p-6 space-y-4">
         <h3 className="text-xl font-bold text-gray-900">Not Included</h3>
         <ul className="space-y-2">
-          {["✗ Airfare / Train / Bus tickets", "✗ Travel Insurance", "✗ Meals not mentioned", "✗ Personal expenses", "✗ Tips and gratuities"].map(
-            (item, idx) => (
-              <li key={idx} className="flex items-center gap-2 text-gray-700">
-                <span className="text-red-600 font-bold">✗</span>
-                {item.substring(2)}
-              </li>
-            )
-          )}
+          {[
+            "✗ Airfare / Train / Bus tickets",
+            "✗ Travel Insurance",
+            "✗ Meals not mentioned",
+            "✗ Personal expenses",
+            "✗ Tips and gratuities",
+          ].map((item, idx) => (
+            <li key={idx} className="flex items-center gap-2 text-gray-700">
+              <span className="text-red-600 font-bold">✗</span>
+              {item.substring(2)}
+            </li>
+          ))}
         </ul>
       </div>
     </div>
-  )
+  );
 }
 
 function PriceSummary({ package: pkg, discount }) {
-  const travelers = 1 // Default, can be passed as prop
-  const totalPrice = pkg.price * travelers
+  const travelers = 1; // Default, can be passed as prop
+  const totalPrice = pkg.price * travelers;
 
   return (
     <div className="sticky top-32 bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg space-y-4">
@@ -255,11 +343,18 @@ function PriceSummary({ package: pkg, discount }) {
       <div>
         <p className="text-sm text-gray-600 mb-2">Price per person</p>
         <div className="flex items-baseline gap-2 mb-1">
-          <span className="text-3xl font-bold text-blue-600">₹{pkg.price.toLocaleString()}</span>
-          <span className="text-sm text-gray-500 line-through">₹{pkg.originalPrice.toLocaleString()}</span>
+          <span className="text-3xl font-bold text-blue-600">
+            ₹{pkg.price.toLocaleString()}
+          </span>
+          <span className="text-sm text-gray-500 line-through">
+            ₹{pkg.originalPrice.toLocaleString()}
+          </span>
         </div>
         {discount > 0 && (
-          <p className="text-sm font-semibold text-red-600">Save ₹{(pkg.originalPrice - pkg.price).toLocaleString()} ({discount}% OFF)</p>
+          <p className="text-sm font-semibold text-red-600">
+            Save ₹{(pkg.originalPrice - pkg.price).toLocaleString()} ({discount}
+            % OFF)
+          </p>
         )}
       </div>
 
@@ -268,8 +363,12 @@ function PriceSummary({ package: pkg, discount }) {
 
       {/* Total Price */}
       <div>
-        <p className="text-sm text-gray-600 mb-2">Total for {travelers} adult</p>
-        <p className="text-2xl font-bold text-gray-900">₹{totalPrice.toLocaleString()}</p>
+        <p className="text-sm text-gray-600 mb-2">
+          Total for {travelers} adult
+        </p>
+        <p className="text-2xl font-bold text-gray-900">
+          ₹{totalPrice.toLocaleString()}
+        </p>
       </div>
 
       {/* Divider */}
@@ -292,7 +391,9 @@ function PriceSummary({ package: pkg, discount }) {
       </button>
 
       {/* Info */}
-      <p className="text-xs text-gray-500 text-center">Secure payment | Free cancellation upto 7 days</p>
+      <p className="text-xs text-gray-500 text-center">
+        Secure payment | Free cancellation upto 7 days
+      </p>
 
       {/* Divider */}
       <div className="border-t border-gray-200"></div>
@@ -316,8 +417,12 @@ function PriceSummary({ package: pkg, discount }) {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-bold text-sm text-gray-900">{coupon.code}</p>
-                  <p className="text-xs text-gray-600">Save {coupon.discount}</p>
+                  <p className="font-bold text-sm text-gray-900">
+                    {coupon.code}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Save {coupon.discount}
+                  </p>
                 </div>
                 <button
                   className={`text-xs font-bold ${
@@ -334,7 +439,7 @@ function PriceSummary({ package: pkg, discount }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function generateItinerary(destination, duration) {
@@ -346,8 +451,15 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "4-star Hotel in Srinagar",
         activities: [
-          { title: "Arrival at Srinagar Airport", description: "Welcome to Kashmir! Airport transfer to hotel and check-in" },
-          { title: "Shikara Ride on Dal Lake", description: "Evening boat ride on the famous floating gardens" },
+          {
+            title: "Arrival at Srinagar Airport",
+            description:
+              "Welcome to Kashmir! Airport transfer to hotel and check-in",
+          },
+          {
+            title: "Shikara Ride on Dal Lake",
+            description: "Evening boat ride on the famous floating gardens",
+          },
         ],
       },
       {
@@ -356,9 +468,20 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Gulmarg",
         activities: [
-          { title: "Scenic Drive to Gulmarg", description: "2-hour scenic mountain drive through pine forests" },
-          { title: "Gondola Ride", description: "Experience the Asia's highest gondola with panoramic views" },
-          { title: "Alpine Meadows Walk", description: "Trek through beautiful meadows with Himalayan backdrop" },
+          {
+            title: "Scenic Drive to Gulmarg",
+            description: "2-hour scenic mountain drive through pine forests",
+          },
+          {
+            title: "Gondola Ride",
+            description:
+              "Experience the Asia's highest gondola with panoramic views",
+          },
+          {
+            title: "Alpine Meadows Walk",
+            description:
+              "Trek through beautiful meadows with Himalayan backdrop",
+          },
         ],
       },
       {
@@ -367,8 +490,15 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Gulmarg",
         activities: [
-          { title: "Skiing Lessons", description: "Professional skiing training with certified instructors" },
-          { title: "Snow Sports", description: "Snowboarding and other winter activities" },
+          {
+            title: "Skiing Lessons",
+            description:
+              "Professional skiing training with certified instructors",
+          },
+          {
+            title: "Snow Sports",
+            description: "Snowboarding and other winter activities",
+          },
         ],
       },
       {
@@ -377,8 +507,15 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Hotel in Pahalgam",
         activities: [
-          { title: "Betaab Valley Visit", description: "Explore the picturesque valley surrounded by willow trees" },
-          { title: "Aru Valley Trek", description: "Guided trek through scenic valleys and streams" },
+          {
+            title: "Betaab Valley Visit",
+            description:
+              "Explore the picturesque valley surrounded by willow trees",
+          },
+          {
+            title: "Aru Valley Trek",
+            description: "Guided trek through scenic valleys and streams",
+          },
         ],
       },
       {
@@ -386,8 +523,14 @@ function generateItinerary(destination, duration) {
         location: "Srinagar Departure",
         meal: "Breakfast",
         activities: [
-          { title: "Final Shopping", description: "Last-minute souvenirs and local crafts" },
-          { title: "Departure", description: "Transfer to airport with memorable moments" },
+          {
+            title: "Final Shopping",
+            description: "Last-minute souvenirs and local crafts",
+          },
+          {
+            title: "Departure",
+            description: "Transfer to airport with memorable moments",
+          },
         ],
       },
     ],
@@ -398,8 +541,15 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "4-star Hotel in Srinagar",
         activities: [
-          { title: "Arrival at Srinagar Airport", description: "Welcome to Kashmir! Airport transfer to hotel and check-in" },
-          { title: "Shikara Ride on Dal Lake", description: "Evening boat ride on the famous floating gardens" },
+          {
+            title: "Arrival at Srinagar Airport",
+            description:
+              "Welcome to Kashmir! Airport transfer to hotel and check-in",
+          },
+          {
+            title: "Shikara Ride on Dal Lake",
+            description: "Evening boat ride on the famous floating gardens",
+          },
         ],
       },
       {
@@ -408,9 +558,19 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "4-star Hotel in Srinagar",
         activities: [
-          { title: "Mughal Gardens", description: "Visit the beautiful Nishat Bagh and Shalimar Bagh gardens" },
-          { title: "Traditional Market", description: "Explore local spice markets and handicraft shops" },
-          { title: "Sunset at Jhelum River", description: "Enjoy riverside walk and local cuisine" },
+          {
+            title: "Mughal Gardens",
+            description:
+              "Visit the beautiful Nishat Bagh and Shalimar Bagh gardens",
+          },
+          {
+            title: "Traditional Market",
+            description: "Explore local spice markets and handicraft shops",
+          },
+          {
+            title: "Sunset at Jhelum River",
+            description: "Enjoy riverside walk and local cuisine",
+          },
         ],
       },
       {
@@ -419,9 +579,20 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Gulmarg",
         activities: [
-          { title: "Scenic Drive to Gulmarg", description: "2-hour scenic mountain drive through pine forests" },
-          { title: "Gondola Ride", description: "Experience the Asia's highest gondola with panoramic views" },
-          { title: "Alpine Meadows Walk", description: "Trek through beautiful meadows with Himalayan backdrop" },
+          {
+            title: "Scenic Drive to Gulmarg",
+            description: "2-hour scenic mountain drive through pine forests",
+          },
+          {
+            title: "Gondola Ride",
+            description:
+              "Experience the Asia's highest gondola with panoramic views",
+          },
+          {
+            title: "Alpine Meadows Walk",
+            description:
+              "Trek through beautiful meadows with Himalayan backdrop",
+          },
         ],
       },
       {
@@ -430,9 +601,19 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Hotel in Pahalgam",
         activities: [
-          { title: "Betaab Valley Visit", description: "Explore the picturesque valley surrounded by willow trees" },
-          { title: "Aru Valley Trek", description: "Guided trek through scenic valleys and streams" },
-          { title: "Local Village Tour", description: "Experience Kashmiri culture and hospitality" },
+          {
+            title: "Betaab Valley Visit",
+            description:
+              "Explore the picturesque valley surrounded by willow trees",
+          },
+          {
+            title: "Aru Valley Trek",
+            description: "Guided trek through scenic valleys and streams",
+          },
+          {
+            title: "Local Village Tour",
+            description: "Experience Kashmiri culture and hospitality",
+          },
         ],
       },
       {
@@ -440,8 +621,15 @@ function generateItinerary(destination, duration) {
         location: "Srinagar Departure",
         meal: "Breakfast",
         activities: [
-          { title: "Final Shopping", description: "Last-minute souvenirs and local crafts" },
-          { title: "Departure", description: "Transfer to airport with memorable moments of Kashmir" },
+          {
+            title: "Final Shopping",
+            description: "Last-minute souvenirs and local crafts",
+          },
+          {
+            title: "Departure",
+            description:
+              "Transfer to airport with memorable moments of Kashmir",
+          },
         ],
       },
     ],
@@ -452,8 +640,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "4-star Hotel in Central Delhi",
         activities: [
-          { title: "Airport Reception", description: "Meet and greet at Delhi airport with hotel transfer" },
-          { title: "Welcome Dinner", description: "Authentic Indian cuisine at hotel restaurant" },
+          {
+            title: "Airport Reception",
+            description: "Meet and greet at Delhi airport with hotel transfer",
+          },
+          {
+            title: "Welcome Dinner",
+            description: "Authentic Indian cuisine at hotel restaurant",
+          },
         ],
       },
       {
@@ -462,10 +656,22 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "4-star Hotel in Central Delhi",
         activities: [
-          { title: "Red Fort Visit", description: "Guided tour of the historic Red Fort" },
-          { title: "Chandni Chowk Market", description: "Walking tour through the bustling old market" },
-          { title: "Jama Masjid", description: "Visit one of India's largest mosques" },
-          { title: "Food Walk", description: "Taste authentic street food of Old Delhi" },
+          {
+            title: "Red Fort Visit",
+            description: "Guided tour of the historic Red Fort",
+          },
+          {
+            title: "Chandni Chowk Market",
+            description: "Walking tour through the bustling old market",
+          },
+          {
+            title: "Jama Masjid",
+            description: "Visit one of India's largest mosques",
+          },
+          {
+            title: "Food Walk",
+            description: "Taste authentic street food of Old Delhi",
+          },
         ],
       },
       {
@@ -474,10 +680,22 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "4-star Hotel in Central Delhi",
         activities: [
-          { title: "India Gate & Rashtrapati Bhavan", description: "Visit iconic monuments of independent India" },
-          { title: "Humayun's Tomb", description: "Marvel at Mughal architecture" },
-          { title: "Lotus Temple", description: "Peaceful baháí temple with modern architecture" },
-          { title: "Evening at Connaught Place", description: "Shopping and dining at premier destination" },
+          {
+            title: "India Gate & Rashtrapati Bhavan",
+            description: "Visit iconic monuments of independent India",
+          },
+          {
+            title: "Humayun's Tomb",
+            description: "Marvel at Mughal architecture",
+          },
+          {
+            title: "Lotus Temple",
+            description: "Peaceful baháí temple with modern architecture",
+          },
+          {
+            title: "Evening at Connaught Place",
+            description: "Shopping and dining at premier destination",
+          },
         ],
       },
     ],
@@ -488,8 +706,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Heritage Hotel in Kochi",
         activities: [
-          { title: "Kochi Airport Reception", description: "Warm welcome and transfer to heritage hotel" },
-          { title: "Chinese Fishing Nets Tour", description: "Evening visit to iconic fishing nets" },
+          {
+            title: "Kochi Airport Reception",
+            description: "Warm welcome and transfer to heritage hotel",
+          },
+          {
+            title: "Chinese Fishing Nets Tour",
+            description: "Evening visit to iconic fishing nets",
+          },
         ],
       },
       {
@@ -498,9 +722,18 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Heritage Hotel in Kochi",
         activities: [
-          { title: "Fort Kochi Heritage Walk", description: "Explore colonial architecture and old bazaars" },
-          { title: "Spice Market Tour", description: "Learn about Kerala's spice trade history" },
-          { title: "Houseboat Cruise", description: "Sunset cruise on the magical backwaters" },
+          {
+            title: "Fort Kochi Heritage Walk",
+            description: "Explore colonial architecture and old bazaars",
+          },
+          {
+            title: "Spice Market Tour",
+            description: "Learn about Kerala's spice trade history",
+          },
+          {
+            title: "Houseboat Cruise",
+            description: "Sunset cruise on the magical backwaters",
+          },
         ],
       },
     ],
@@ -511,8 +744,15 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Hotel in Shimla",
         activities: [
-          { title: "Arrive in Shimla", description: "Scenic drive through pine forests and Himalayan foothills" },
-          { title: "The Mall Walk", description: "Evening stroll on the famous shopping street" },
+          {
+            title: "Arrive in Shimla",
+            description:
+              "Scenic drive through pine forests and Himalayan foothills",
+          },
+          {
+            title: "The Mall Walk",
+            description: "Evening stroll on the famous shopping street",
+          },
         ],
       },
       {
@@ -521,9 +761,18 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Hotel in Shimla",
         activities: [
-          { title: "Christ Church Visit", description: "Iconic neo-Gothic church with colonial architecture" },
-          { title: "Viceroy Lodge Tour", description: "Historic building with panoramic views of valleys" },
-          { title: "Kali Bari Temple", description: "Local temple with spiritual significance" },
+          {
+            title: "Christ Church Visit",
+            description: "Iconic neo-Gothic church with colonial architecture",
+          },
+          {
+            title: "Viceroy Lodge Tour",
+            description: "Historic building with panoramic views of valleys",
+          },
+          {
+            title: "Kali Bari Temple",
+            description: "Local temple with spiritual significance",
+          },
         ],
       },
       {
@@ -532,8 +781,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Manali",
         activities: [
-          { title: "Drive to Manali", description: "Scenic drive through beautiful mountain terrain" },
-          { title: "Adventure Activities", description: "Paragliding, river rafting, or mountain biking" },
+          {
+            title: "Drive to Manali",
+            description: "Scenic drive through beautiful mountain terrain",
+          },
+          {
+            title: "Adventure Activities",
+            description: "Paragliding, river rafting, or mountain biking",
+          },
         ],
       },
     ],
@@ -544,8 +799,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Beachfront Resort",
         activities: [
-          { title: "Airport Transfer", description: "Comfortable transfer to beachfront resort" },
-          { title: "Beach Sunset", description: "Relax on pristine beaches and enjoy sunset" },
+          {
+            title: "Airport Transfer",
+            description: "Comfortable transfer to beachfront resort",
+          },
+          {
+            title: "Beach Sunset",
+            description: "Relax on pristine beaches and enjoy sunset",
+          },
         ],
       },
       {
@@ -554,8 +815,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Beachfront Resort",
         activities: [
-          { title: "Water Sports", description: "Jet skiing, parasailing, banana boat rides" },
-          { title: "Beach Club", description: "Evening at beachside shacks and clubs" },
+          {
+            title: "Water Sports",
+            description: "Jet skiing, parasailing, banana boat rides",
+          },
+          {
+            title: "Beach Club",
+            description: "Evening at beachside shacks and clubs",
+          },
         ],
       },
       {
@@ -564,8 +831,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Beachfront Resort",
         activities: [
-          { title: "Old Goa Churches", description: "Visit historic Portuguese-era churches and monuments" },
-          { title: "Spice Plantation Tour", description: "Experience local spice gardens and farming" },
+          {
+            title: "Old Goa Churches",
+            description: "Visit historic Portuguese-era churches and monuments",
+          },
+          {
+            title: "Spice Plantation Tour",
+            description: "Experience local spice gardens and farming",
+          },
         ],
       },
     ],
@@ -576,8 +849,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Hotel in Leh",
         activities: [
-          { title: "Arrive at Leh", description: "Acclimatization day after high-altitude arrival" },
-          { title: "Leh Town Walk", description: "Explore local markets and monasteries" },
+          {
+            title: "Arrive at Leh",
+            description: "Acclimatization day after high-altitude arrival",
+          },
+          {
+            title: "Leh Town Walk",
+            description: "Explore local markets and monasteries",
+          },
         ],
       },
       {
@@ -586,9 +865,18 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Hotel in Leh",
         activities: [
-          { title: "Shey Palace", description: "Ancient royal palace with Buddhist architecture" },
-          { title: "Thiksey Monastery", description: "11-story monastery with panoramic views" },
-          { title: "Hemis Monastery", description: "Largest monastery with ancient artifacts" },
+          {
+            title: "Shey Palace",
+            description: "Ancient royal palace with Buddhist architecture",
+          },
+          {
+            title: "Thiksey Monastery",
+            description: "11-story monastery with panoramic views",
+          },
+          {
+            title: "Hemis Monastery",
+            description: "Largest monastery with ancient artifacts",
+          },
         ],
       },
       {
@@ -597,8 +885,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Lakeside Camp",
         activities: [
-          { title: "Drive to Pangong", description: "Scenic drive through high mountain passes" },
-          { title: "Pangong Lake Exploration", description: "Stunning high-altitude lake exploration" },
+          {
+            title: "Drive to Pangong",
+            description: "Scenic drive through high mountain passes",
+          },
+          {
+            title: "Pangong Lake Exploration",
+            description: "Stunning high-altitude lake exploration",
+          },
         ],
       },
     ],
@@ -609,8 +903,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Luxury Water Bungalow",
         activities: [
-          { title: "Airport Reception", description: "Speedboat transfer to luxury resort" },
-          { title: "Beach Relaxation", description: "Sunset on pristine white-sand beaches" },
+          {
+            title: "Airport Reception",
+            description: "Speedboat transfer to luxury resort",
+          },
+          {
+            title: "Beach Relaxation",
+            description: "Sunset on pristine white-sand beaches",
+          },
         ],
       },
       {
@@ -619,8 +919,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Luxury Water Bungalow",
         activities: [
-          { title: "Snorkeling Adventure", description: "Explore colorful coral reefs and marine life" },
-          { title: "Island Excursion", description: "Visit local islands and fishing villages" },
+          {
+            title: "Snorkeling Adventure",
+            description: "Explore colorful coral reefs and marine life",
+          },
+          {
+            title: "Island Excursion",
+            description: "Visit local islands and fishing villages",
+          },
         ],
       },
       {
@@ -629,8 +935,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Luxury Water Bungalow",
         activities: [
-          { title: "Scuba Diving", description: "Professional diving with certified instructors" },
-          { title: "Spa & Wellness", description: "Luxury spa treatments with ocean views" },
+          {
+            title: "Scuba Diving",
+            description: "Professional diving with certified instructors",
+          },
+          {
+            title: "Spa & Wellness",
+            description: "Luxury spa treatments with ocean views",
+          },
         ],
       },
     ],
@@ -641,8 +953,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Hotel in Bangkok",
         activities: [
-          { title: "Bangkok Airport Reception", description: "Hotel transfer and check-in" },
-          { title: "Night Bazaar", description: "Shopping at famous night markets" },
+          {
+            title: "Bangkok Airport Reception",
+            description: "Hotel transfer and check-in",
+          },
+          {
+            title: "Night Bazaar",
+            description: "Shopping at famous night markets",
+          },
         ],
       },
       {
@@ -651,9 +969,18 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Hotel in Bangkok",
         activities: [
-          { title: "Grand Palace", description: "Iconic royal palace with elaborate architecture" },
-          { title: "Wat Phra Kaew", description: "Temple of the Emerald Buddha" },
-          { title: "Floating Markets", description: "Traditional boat markets with exotic products" },
+          {
+            title: "Grand Palace",
+            description: "Iconic royal palace with elaborate architecture",
+          },
+          {
+            title: "Wat Phra Kaew",
+            description: "Temple of the Emerald Buddha",
+          },
+          {
+            title: "Floating Markets",
+            description: "Traditional boat markets with exotic products",
+          },
         ],
       },
       {
@@ -662,8 +989,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Beachfront Resort",
         activities: [
-          { title: "Flight to Phuket", description: "Short flight to beautiful beach destination" },
-          { title: "Beach Activities", description: "Swimming, water sports, and beach clubs" },
+          {
+            title: "Flight to Phuket",
+            description: "Short flight to beautiful beach destination",
+          },
+          {
+            title: "Beach Activities",
+            description: "Swimming, water sports, and beach clubs",
+          },
         ],
       },
     ],
@@ -674,8 +1007,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Resort in Seminyak",
         activities: [
-          { title: "Airport Transfer", description: "Comfortable transfer to beachfront resort" },
-          { title: "Beach Walk", description: "Evening stroll on Seminyak Beach" },
+          {
+            title: "Airport Transfer",
+            description: "Comfortable transfer to beachfront resort",
+          },
+          {
+            title: "Beach Walk",
+            description: "Evening stroll on Seminyak Beach",
+          },
         ],
       },
       {
@@ -684,8 +1023,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Seminyak",
         activities: [
-          { title: "Tanah Lot Temple", description: "Iconic seaside temple on rock formations" },
-          { title: "Rice Terraces", description: "Trek through scenic green rice paddies" },
+          {
+            title: "Tanah Lot Temple",
+            description: "Iconic seaside temple on rock formations",
+          },
+          {
+            title: "Rice Terraces",
+            description: "Trek through scenic green rice paddies",
+          },
         ],
       },
       {
@@ -694,8 +1039,14 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Resort in Seminyak",
         activities: [
-          { title: "Surfing Lessons", description: "Professional surfer training on famous beaches" },
-          { title: "Traditional Massage", description: "Relaxing Balinese massage and spa treatments" },
+          {
+            title: "Surfing Lessons",
+            description: "Professional surfer training on famous beaches",
+          },
+          {
+            title: "Traditional Massage",
+            description: "Relaxing Balinese massage and spa treatments",
+          },
         ],
       },
     ],
@@ -706,8 +1057,14 @@ function generateItinerary(destination, duration) {
         meal: "Dinner",
         hotel: "Palace Hotel",
         activities: [
-          { title: "Jaipur Airport Reception", description: "Transfer to heritage palace hotel" },
-          { title: "City Palace View", description: "Evening visit to illuminated city palace" },
+          {
+            title: "Jaipur Airport Reception",
+            description: "Transfer to heritage palace hotel",
+          },
+          {
+            title: "City Palace View",
+            description: "Evening visit to illuminated city palace",
+          },
         ],
       },
       {
@@ -716,9 +1073,18 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Palace Hotel",
         activities: [
-          { title: "Hawa Mahal", description: "The iconic Pink City's signature structure" },
-          { title: "Jantar Mantar", description: "Ancient astronomical observation site" },
-          { title: "Bazaar Walking Tour", description: "Explore vibrant markets and local crafts" },
+          {
+            title: "Hawa Mahal",
+            description: "The iconic Pink City's signature structure",
+          },
+          {
+            title: "Jantar Mantar",
+            description: "Ancient astronomical observation site",
+          },
+          {
+            title: "Bazaar Walking Tour",
+            description: "Explore vibrant markets and local crafts",
+          },
         ],
       },
       {
@@ -727,28 +1093,35 @@ function generateItinerary(destination, duration) {
         meal: "Breakfast, Lunch & Dinner",
         hotel: "Palace Hotel",
         activities: [
-          { title: "Amber Fort Tour", description: "Grand fort complex with royal apartments" },
-          { title: "Elephant Ride", description: "Traditional elephant ride up the fort" },
+          {
+            title: "Amber Fort Tour",
+            description: "Grand fort complex with royal apartments",
+          },
+          {
+            title: "Elephant Ride",
+            description: "Traditional elephant ride up the fort",
+          },
         ],
       },
     ],
-  }
+  };
 
   // Try to find exact match first, then partial match
-  let selectedDest = dayPlans[destination]
+  let selectedDest = dayPlans[destination];
 
   if (!selectedDest) {
     // Try partial matching
-    const destinations = Object.keys(dayPlans)
+    const destinations = Object.keys(dayPlans);
     for (const dest of destinations) {
       if (destination.includes(dest) || dest.includes(destination)) {
-        selectedDest = dayPlans[dest]
-        break
+        selectedDest = dayPlans[dest];
+        break;
       }
     }
   }
 
-  const plans = selectedDest || dayPlans["Kashmir"] || Object.values(dayPlans)[0]
+  const plans =
+    selectedDest || dayPlans["Kashmir"] || Object.values(dayPlans)[0];
 
-  return plans.slice(0, Math.min(duration, plans.length))
+  return plans.slice(0, Math.min(duration, plans.length));
 }

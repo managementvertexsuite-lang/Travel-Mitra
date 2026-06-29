@@ -1,52 +1,85 @@
-import { useState } from "react"
-import { ArrowRightLeft, Search, ChevronLeft, ChevronRight } from "lucide-react"
-import LocationSelector from "./LocationSelector"
-import CalendarDropdown from "./CalendarDropdown"
-import { formatDate, formatDateISO, getToday } from "../utils/dateUtils"
+import { useState, useRef, useEffect } from "react";
+import {
+  ArrowRightLeft,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import LocationSelector from "./LocationSelector";
+import CalendarDropdown from "./CalendarDropdown";
+import { formatDate, formatDateISO, getToday } from "../utils/dateUtils";
+import { destinations } from "../data/destinations";
 
-export default function HolidaySearchCard({ onSearch, onDestinationClick, onPackageClick }) {
+import banner1 from "../banners/banner1.png";
+import banner2 from "../banners/banner2.png";
+import banner3 from "../banners/banner3.png";
+import banner4 from "../banners/banner4.png";
+
+const BANNER_IMAGES = [banner1, banner2, banner3, banner4];
+
+export default function HolidaySearchCard({
+  onSearch,
+  onDestinationClick,
+  onPackageClick,
+}) {
   // Mock user location for carousel packages
-  const mockFromLocation = { id: 1, city: "Delhi" }
-  // Location states
-  const [fromLocation, setFromLocation] = useState(null)
-  const [toLocation, setToLocation] = useState(null)
-  const [fromOpen, setFromOpen] = useState(false)
-  const [toOpen, setToOpen] = useState(false)
+  const mockFromLocation = { id: 1, city: "Delhi" };
+  const searchCardRef = useRef(null);
 
-  // Date states
-  const [departureDate, setDepartureDate] = useState(null)
-  const [departureCalendarOpen, setDepartureCalendarOpen] = useState(false)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchCardRef.current && !searchCardRef.current.contains(event.target)) {
+        setFromOpen(false);
+        setToOpen(false);
+        setDepartureCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  // Location states
+  const [fromLocation, setFromLocation] = useState(null);
+  const [toLocation, setToLocation] = useState(null);
+  const [fromOpen, setFromOpen] = useState(false);
+  const [toOpen, setToOpen] = useState(false);
+  const [departureCalendarOpen, setDepartureCalendarOpen] = useState(false);
+  const [departureDate, setDepartureDate] = useState(null);
+  const [travelers, setTravelers] = useState(2);
+  const [errors, setErrors] = useState({});
+
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  useEffect(() => {
+    const bannerInterval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % BANNER_IMAGES.length);
+    }, 3000);
+    return () => clearInterval(bannerInterval);
+  }, []);
 
   // Duration state
-  const [duration, setDuration] = useState("5")
-
-  // Traveller state
-  const [travelers, setTravelers] = useState("2")
-
-  // Validation state
-  const [errors, setErrors] = useState({})
+  const [duration, setDuration] = useState("5");
 
   const swapLocations = () => {
-    setFromLocation(toLocation)
-    setToLocation(fromLocation)
-  }
+    setFromLocation(toLocation);
+    setToLocation(fromLocation);
+  };
 
   const validateSearch = () => {
-    const newErrors = {}
+    const newErrors = {};
 
-    if (!fromLocation) newErrors.from = "Please select departure city"
-    if (!toLocation) newErrors.to = "Please select destination"
+    if (!fromLocation) newErrors.from = "Please select departure city";
+    if (!toLocation) newErrors.to = "Please select destination";
     if (fromLocation && toLocation && fromLocation.id === toLocation.id) {
-      newErrors.location = "Departure and destination cannot be the same"
+      newErrors.location = "Departure and destination cannot be the same";
     }
-    if (!departureDate) newErrors.departure = "Please select departure date"
+    if (!departureDate) newErrors.departure = "Please select departure date";
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSearch = () => {
-    if (!validateSearch()) return
+    if (!validateSearch()) return;
 
     const payload = {
       from: fromLocation,
@@ -54,220 +87,290 @@ export default function HolidaySearchCard({ onSearch, onDestinationClick, onPack
       departureDate: formatDateISO(departureDate),
       duration: parseInt(duration),
       travelers: parseInt(travelers),
-    }
+    };
 
-    onSearch(payload)
-  }
+    onSearch(payload);
+  };
 
   return (
-    <div className="relative py-12 sm:py-16 px-4">
-      <div className="max-w-5xl mx-auto">
+    <div className="w-full">
+      {/* Hero Section */}
+      <div
+        className="relative h-[550px] sm:h-[650px] bg-cover bg-center flex flex-col"
+        style={{
+          backgroundImage:
+            "url(https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1259&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)",
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/20"></div>
+
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-dark mb-3">
-            Holiday Packages
-          </h1>
-          <p className="text-muted text-lg">
-            Explore amazing holiday destinations with curated packages
-          </p>
+        <header className="fixed top-0 left-0 right-0 z-50 w-full px-6 sm:px-10 py-4 flex justify-between items-center bg-black/40 backdrop-blur-md shadow-lg border-b border-white/10 transition-all">
+          <div className="flex items-center gap-2">
+            <img
+              src="https://miro.medium.com/v2/resize:fit:1025/1%2AgCdn4NaRqwe-jqzyPToPXg.jpeg"
+              alt="Logo"
+              className="w-8 h-8 rounded-lg shadow-sm"
+            />
+            <span className="text-white text-xl drop-shadow-md font-bold font-serif leading-none tracking-wide">
+              Travel Mitra
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-8">
+            <a
+              href="#"
+              className="text-white font-medium hover:text-gray-200 drop-shadow-md transition-colors"
+            >
+              Packages
+            </a>
+            <a
+              href="#"
+              className="text-white font-medium hover:text-gray-200 drop-shadow-md transition-colors"
+            >
+              About
+            </a>
+            <a
+              href="#"
+              className="text-white font-medium hover:text-gray-200 drop-shadow-md transition-colors"
+            >
+              Contact
+            </a>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2 rounded-full font-medium transition-colors shadow-lg">
+              Get Started
+            </button>
+          </div>
+        </header>
+
+        {/* Search Card in the Middle */}
+        <div className="relative z-40 flex-grow flex items-center justify-center px-4 w-full max-w-7xl mx-auto pb-16 mb-8">
+          <div className="bg-white rounded-xl shadow-2xl relative flex flex-col w-full">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-100 bg-[#f8fbff] rounded-t-xl px-2 pt-2">
+              <button className="flex items-center gap-2 px-6 py-3 border-b-2 border-blue-500 text-blue-500 font-bold bg-white rounded-t-lg relative">
+                <Search className="w-4 h-4" />
+                <span>Search</span>
+              </button>
+              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="text-lg">🌅</span> Honeymoon
+              </button>
+              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="text-lg">🛂</span> Visa Free Packages
+              </button>
+              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="text-lg">👥</span> Group Tour Packages
+              </button>
+              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="text-lg">🚢</span> Disney Cruise
+              </button>
+              <button className="flex items-center gap-2 px-6 py-3 text-gray-700 font-medium hover:text-blue-500 transition-colors whitespace-nowrap">
+                <span className="text-lg">🏝️</span> Last Minute Deals
+              </button>
+            </div>
+
+            {/* Error Messages */}
+            {Object.values(errors).length > 0 && (
+              <div className="p-3 bg-red-50 border-b border-red-100 text-sm text-red-600 font-medium flex flex-wrap gap-4">
+                {errors.location && <span>{errors.location}</span>}
+                {errors.from && <span>{errors.from}</span>}
+                {errors.to && <span>{errors.to}</span>}
+                {errors.departure && <span>{errors.departure}</span>}
+              </div>
+            )}
+
+            {/* Form Fields Wrapper */}
+            <div className="px-5 pt-5 pb-3" ref={searchCardRef}>
+              <div className="border border-gray-300 rounded-xl grid grid-cols-1 sm:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+                {/* From */}
+                <div
+                  className="px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors relative group rounded-l-xl"
+                  onClick={() => {
+                    if (!fromOpen) {
+                      setFromOpen(true);
+                      setToOpen(false);
+                      setDepartureCalendarOpen(false);
+                    } else {
+                      setFromOpen(false);
+                    }
+                  }}
+                >
+                  <div className="text-[13px] text-gray-500 font-semibold mb-1">
+                    From City
+                  </div>
+                  <div className="text-3xl font-black text-black">
+                    {fromLocation?.city || "New Delhi"}
+                  </div>
+                  <div className="text-[13px] text-gray-500 mt-1 truncate">
+                    India
+                  </div>
+
+                  <LocationSelector
+                    isOpen={fromOpen}
+                    onClose={() => setFromOpen(false)}
+                    onSelect={setFromLocation}
+                    title="Select Departure City"
+                    selectedLocation={fromLocation}
+                  />
+                </div>
+
+                {/* To */}
+                <div
+                  className="px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors relative group"
+                  onClick={() => {
+                    if (!toOpen) {
+                      setToOpen(true);
+                      setFromOpen(false);
+                      setDepartureCalendarOpen(false);
+                    } else {
+                      setToOpen(false);
+                    }
+                  }}
+                >
+                  <div className="text-[13px] text-gray-500 font-semibold mb-1 truncate">
+                    To City/Country/Category
+                  </div>
+                  <div className="text-3xl font-black text-black">
+                    {toLocation?.city || "Goa"}
+                  </div>
+
+                  <LocationSelector
+                    isOpen={toOpen}
+                    onClose={() => setToOpen(false)}
+                    onSelect={setToLocation}
+                    title="Select Destination"
+                    selectedLocation={toLocation}
+                  />
+                </div>
+
+                {/* Departure */}
+                <div
+                  className="px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors relative group"
+                  onClick={() => {
+                    if (!departureCalendarOpen) {
+                      setDepartureCalendarOpen(true);
+                      setFromOpen(false);
+                      setToOpen(false);
+                    } else {
+                      setDepartureCalendarOpen(false);
+                    }
+                  }}
+                >
+                  <div className="text-[13px] text-gray-500 font-semibold mb-1 flex items-center gap-1">
+                    Departure Date{" "}
+                    <span className="text-blue-500 text-[10px]">▼</span>
+                  </div>
+                  <div className="text-[28px] font-black text-black leading-none mt-2">
+                    {departureDate
+                      ? formatDate(departureDate).split(" ")[0]
+                      : "13"}{" "}
+                    <span className="text-lg font-bold">
+                      {departureDate
+                        ? formatDate(departureDate).split(" ")[1]
+                        : "Aug, 2026"}
+                    </span>
+                  </div>
+                  <div className="text-[13px] text-gray-500 mt-1">Thursday</div>
+
+                  <CalendarDropdown
+                    isOpen={departureCalendarOpen}
+                    onClose={() => setDepartureCalendarOpen(false)}
+                    onSelect={setDepartureDate}
+                    selectedDate={departureDate}
+                    minDate={getToday()}
+                  />
+                </div>
+
+                {/* Rooms */}
+                <div className="px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors relative group">
+                  <div className="text-[13px] text-gray-500 font-semibold mb-1 flex items-center gap-1">
+                    Rooms & Guests{" "}
+                    <span className="text-blue-500 text-[10px]">▼</span>
+                  </div>
+                  <div className="text-[28px] font-black text-black leading-none mt-2">
+                    {travelers || "2"}{" "}
+                    <span className="text-lg font-bold">Adults</span>
+                  </div>
+                  <div className="text-[13px] text-gray-500 mt-1">1 Room</div>
+                </div>
+
+                {/* Filters */}
+                <div className="px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors relative group rounded-r-xl">
+                  <div className="text-[13px] text-gray-500 font-semibold mb-1 flex items-center gap-1">
+                    Filters <span className="text-blue-500 text-[10px]">▼</span>
+                  </div>
+                  <div className="text-sm font-bold text-black mt-2 leading-tight">
+                    Select Filters <br />{" "}
+                    <span className="text-gray-500 font-medium">
+                      (Optional)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center px-6 pb-10 pt-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-gray-800 uppercase tracking-wide">
+                  Recent Searches:
+                </span>
+                <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded text-xs flex items-center gap-1 font-medium">
+                  {fromLocation?.city || "New Delhi"}{" "}
+                  <span className="text-blue-400">→</span>{" "}
+                  {toLocation?.city || "Goa"}
+                </span>
+              </div>
+              <span className="text-[13px] font-bold text-gray-600 hidden sm:block">
+                Holiday Packages
+              </span>
+            </div>
+
+            {/* Overlapping Search Button */}
+            <div className="absolute -bottom-6 w-full flex justify-center items-center">
+              <button
+                onClick={handleSearch}
+                className="bg-blue-600 text-white font-bold text-xl px-16 py-3.5 rounded-full shadow-xl"
+              >
+                SEARCH
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Search Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
-          {/* Error Messages */}
-          {Object.values(errors).length > 0 && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-              {errors.location && (
-                <p className="text-sm text-red-600 font-medium">{errors.location}</p>
-              )}
-              {errors.from && (
-                <p className="text-sm text-red-600 font-medium">{errors.from}</p>
-              )}
-              {errors.to && (
-                <p className="text-sm text-red-600 font-medium">{errors.to}</p>
-              )}
-              {errors.departure && (
-                <p className="text-sm text-red-600 font-medium">{errors.departure}</p>
-              )}
-            </div>
-          )}
-
-          {/* Search Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end mb-8">
-            {/* From */}
-            <div className="relative">
-              <label className="block text-sm font-semibold text-dark mb-2">
-                From
-              </label>
-              <button
-                onClick={() => setFromOpen(true)}
-                className={`w-full px-4 py-3 text-left rounded-xl border-2 transition-all focus:outline-none ${
-                  errors.from
-                    ? "border-red-300 bg-red-50"
-                    : fromOpen
-                    ? "border-primary bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <span className={fromLocation ? "text-dark font-medium" : "text-muted"}>
-                  {fromLocation?.city || "Select city"}
-                </span>
-              </button>
-              {errors.from && <p className="text-xs text-red-600 mt-1">{errors.from}</p>}
-              <LocationSelector
-                isOpen={fromOpen}
-                onClose={() => setFromOpen(false)}
-                onSelect={setFromLocation}
-                title="Select Departure City"
-                selectedLocation={fromLocation}
-              />
-            </div>
-
-            {/* Swap Button */}
-            <div className="hidden lg:flex justify-center">
-              <button
-                onClick={swapLocations}
-                className="p-3 hover:bg-gray-100 rounded-full transition-colors"
-                title="Swap locations"
-              >
-                <ArrowRightLeft className="w-5 h-5 text-primary" />
-              </button>
-            </div>
-
-            {/* To */}
-            <div className="relative">
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Destination
-              </label>
-              <button
-                onClick={() => setToOpen(true)}
-                className={`w-full px-4 py-3 text-left rounded-xl border-2 transition-all focus:outline-none ${
-                  errors.to
-                    ? "border-red-300 bg-red-50"
-                    : toOpen
-                    ? "border-primary bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <span className={toLocation ? "text-dark font-medium" : "text-muted"}>
-                  {toLocation?.city || "Select city"}
-                </span>
-              </button>
-              {errors.to && <p className="text-xs text-red-600 mt-1">{errors.to}</p>}
-              <LocationSelector
-                isOpen={toOpen}
-                onClose={() => setToOpen(false)}
-                onSelect={setToLocation}
-                title="Select Destination"
-                selectedLocation={toLocation}
-              />
-            </div>
-
-            {/* Departure Date */}
-            <div className="relative">
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Departure
-              </label>
-              <button
-                onClick={() => setDepartureCalendarOpen(true)}
-                className={`w-full px-4 py-3 text-left rounded-xl border-2 transition-all focus:outline-none ${
-                  errors.departure
-                    ? "border-red-300 bg-red-50"
-                    : departureCalendarOpen
-                    ? "border-primary bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
-              >
-                <span className={departureDate ? "text-dark font-medium" : "text-muted"}>
-                  {departureDate ? formatDate(departureDate) : "Select date"}
-                </span>
-              </button>
-              {errors.departure && (
-                <p className="text-xs text-red-600 mt-1">{errors.departure}</p>
-              )}
-              <CalendarDropdown
-                isOpen={departureCalendarOpen}
-                onClose={() => setDepartureCalendarOpen(false)}
-                onSelect={setDepartureDate}
-                selectedDate={departureDate}
-                minDate={getToday()}
-              />
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-semibold text-dark mb-2">
-                Duration
-              </label>
-              <select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 focus:border-primary focus:outline-none transition-all font-medium text-dark"
-              >
-                <option value="3">3 Days</option>
-                <option value="4">4 Days</option>
-                <option value="5">5 Days</option>
-                <option value="6">6 Days</option>
-                <option value="7">7 Days</option>
-                <option value="10">10 Days</option>
-                <option value="14">14 Days</option>
-              </select>
+        {/* Banner Carousel */}
+        <div className="absolute -bottom-56 left-1/2 -translate-x-1/2 w-full max-w-7xl px-4 z-20 flex flex-col items-center">
+          <div className="w-full relative overflow-hidden group">
+            {/* Sliding Images Container */}
+            <div 
+              className="flex w-full transition-transform duration-700 ease-in-out"
+              style={{ transform: `translateX(-${currentBanner * 100}%)` }}
+            >
+              {BANNER_IMAGES.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`Banner ${idx + 1}`}
+                  className="w-full h-auto flex-shrink-0 object-contain"
+                />
+              ))}
             </div>
           </div>
 
-          {/* Second Row: Travelers */}
-          <div className="mb-8">
-            <label className="block text-sm font-semibold text-dark mb-2">
-              Number of Travelers
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <select
-                value={travelers}
-                onChange={(e) => setTravelers(e.target.value)}
-                className="px-4 py-3 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 focus:border-primary focus:outline-none transition-all font-medium text-dark"
-              >
-                <option value="1">1 Traveler</option>
-                <option value="2">2 Travelers</option>
-                <option value="3">3 Travelers</option>
-                <option value="4">4 Travelers</option>
-                <option value="5">5 Travelers</option>
-                <option value="6">6 Travelers</option>
-              </select>
-            </div>
+          {/* Banner Dots Outside */}
+          <div className="flex gap-2 mt-4">
+            {BANNER_IMAGES.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentBanner(idx)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  idx === currentBanner ? "bg-blue-500" : "bg-gray-300"
+                }`}
+              />
+            ))}
           </div>
-
-          {/* Search Button */}
-          <button
-            onClick={handleSearch}
-            className="w-full bg-gradient-to-r from-primary to-accent text-white py-4 rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3"
-          >
-            <Search size={24} />
-            Explore Holiday Packages
-          </button>
-        </div>
-
-        {/* Decorative Elements */}
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <FeatureCard
-            icon="✈️"
-            title="Curated Packages"
-            description="Hand-picked holiday destinations"
-          />
-          <FeatureCard
-            icon="🎯"
-            title="Best Prices"
-            description="Competitive rates on all packages"
-          />
-          <FeatureCard
-            icon="💬"
-            title="24/7 Support"
-            description="Round-the-clock customer assistance"
-          />
         </div>
       </div>
 
-      {/* Carousel Sections */}
-      <div className="mt-16 space-y-16">
+      <div className="pt-72 space-y-16">
         <CarouselSection
           title="All Moods of Travel SALE!"
           subtitle="Up to 40% OFF* • Use Code: TRAVELMOOD"
@@ -298,7 +401,7 @@ export default function HolidaySearchCard({ onSearch, onDestinationClick, onPack
         />
       </div>
     </div>
-  )
+  );
 }
 
 function FeatureCard({ icon, title, description }) {
@@ -308,216 +411,137 @@ function FeatureCard({ icon, title, description }) {
       <h3 className="font-semibold text-dark mb-2">{title}</h3>
       <p className="text-sm text-muted">{description}</p>
     </div>
-  )
+  );
 }
 
-const ALL_MOODS_PACKAGES = [
-<<<<<<< HEAD
-  { id: 1, name: "Kashmir", image: "🏔️", price: "28,999", rating: 4.8 },
-  { id: 2, name: "Himachal", image: "⛰️", price: "24,999", rating: 4.7 },
-  { id: 3, name: "Kerala", image: "🌴", price: "22,999", rating: 4.9 },
-  { id: 4, name: "North East", image: "🌄", price: "25,999", rating: 4.6 },
-  { id: 5, name: "Coorg & Ooty", image: "🏞️", price: "19,999", rating: 4.8 },
-  { id: 6, name: "Goa", image: "🏝️", price: "18,999", rating: 4.7 },
-  { id: 7, name: "Maldives", image: "🏖️", price: "45,999", rating: 4.9 },
-  { id: 8, name: "Thailand", image: "🎭", price: "35,999", rating: 4.8 },
-  { id: 9, name: "Bali", image: "🌺", price: "42,999", rating: 4.7 },
-  { id: 10, name: "Ladakh", image: "🏜️", price: "32,999", rating: 4.9 },
-  { id: 11, name: "Rajasthan", image: "🏰", price: "21,999", rating: 4.6 },
-  { id: 12, name: "Lakshadweep", image: "🌊", price: "52,999", rating: 4.9 },
-]
+const mapDestinationToPackage = (dest) => ({
+  id: dest._id || dest.destinationId,
+  name: dest.name,
+  image: dest.coverImage || (dest.gallery && dest.gallery[0]) || "",
+});
 
-const LAST_MINUTE_PACKAGES = [
-  { id: 1, name: "South India", image: "🐘", price: "15,999", rating: 4.7 },
-  { id: 2, name: "Kerala Backwaters", image: "🚣", price: "18,999", rating: 4.8 },
-  { id: 3, name: "Kashmir Tour", image: "🏞️", price: "26,999", rating: 4.9 },
-  { id: 4, name: "Shimla & Manali", image: "❄️", price: "22,999", rating: 4.6 },
-  { id: 5, name: "Goa Getaway", image: "🏖️", price: "16,999", rating: 4.7 },
-  { id: 6, name: "Sikkim Adventure", image: "🏔️", price: "24,999", rating: 4.8 },
-  { id: 7, name: "Thailand Beach", image: "🌴", price: "32,999", rating: 4.9 },
-  { id: 8, name: "Andaman Islands", image: "🏝️", price: "38,999", rating: 4.7 },
-  { id: 9, name: "Rajasthan Fort", image: "🏰", price: "19,999", rating: 4.6 },
-  { id: 10, name: "Vietnam Tour", image: "🗿", price: "28,999", rating: 4.8 },
-  { id: 11, name: "Sri Lanka", image: "🏛️", price: "25,999", rating: 4.9 },
-  { id: 12, name: "Dubai Escape", image: "🌆", price: "48,999", rating: 4.7 },
-]
+const ALL_MOODS_PACKAGES = destinations
+  .slice(0, 10)
+  .map(mapDestinationToPackage);
 
-const SPIRITUAL_PACKAGES = [
-  { id: 1, name: "Varanasi Pilgrimage", image: "🕉️", price: "12,999", rating: 4.9 },
-  { id: 2, name: "Haridwar & Rishikesh", image: "🙏", price: "14,999", rating: 4.8 },
-  { id: 3, name: "Ayodhya Divine", image: "🛕", price: "13,999", rating: 4.9 },
-  { id: 4, name: "Mathura Krishna Tour", image: "🪈", price: "11,999", rating: 4.7 },
-  { id: 5, name: "Ujjain Sacred", image: "🔱", price: "10,999", rating: 4.8 },
-  { id: 6, name: "Amritsar Golden Temple", image: "✨", price: "9,999", rating: 4.9 },
-  { id: 7, name: "Tirupati Temple", image: "⛩️", price: "8,999", rating: 4.7 },
-  { id: 8, name: "Rameswaram Dham", image: "🌊", price: "11,999", rating: 4.8 },
-  { id: 9, name: "Puri Jagannath", image: "🏛️", price: "10,999", rating: 4.9 },
-  { id: 10, name: "Rishikesh Yoga", image: "🧘", price: "15,999", rating: 4.8 },
-  { id: 11, name: "Kedarnath Trek", image: "⛩️", price: "18,999", rating: 4.9 },
-  { id: 12, name: "Meenakshi Temple Tour", image: "🕉️", price: "12,999", rating: 4.7 },
-]
+const LAST_MINUTE_PACKAGES = destinations
+  .filter(
+    (d) =>
+      d.destinationType?.includes("beach") ||
+      d.destinationType?.includes("family"),
+  )
+  .map(mapDestinationToPackage);
 
-const ADVENTURE_PACKAGES = [
-  { id: 1, name: "Skydiving Thrills", image: "🪂", price: "34,999", rating: 4.8 },
-  { id: 2, name: "Mountain Climbing", image: "🧗", price: "28,999", rating: 4.9 },
-  { id: 3, name: "Scuba Diving", image: "🤿", price: "32,999", rating: 4.7 },
-  { id: 4, name: "Paragliding Himalayas", image: "🪁", price: "22,999", rating: 4.8 },
-  { id: 5, name: "Rafting Adventure", image: "🚣", price: "12,999", rating: 4.9 },
-  { id: 6, name: "Trekking Expedition", image: "🥾", price: "16,999", rating: 4.7 },
-  { id: 7, name: "Desert Safari", image: "🏜️", price: "18,999", rating: 4.8 },
-  { id: 8, name: "Zip-lining Fun", image: "🎢", price: "8,999", rating: 4.9 },
-  { id: 9, name: "Jungle Safari", image: "🦁", price: "21,999", rating: 4.6 },
-  { id: 10, name: "Rock Climbing", image: "🧗", price: "15,999", rating: 4.8 },
-  { id: 11, name: "White Water Rafting", image: "💦", price: "14,999", rating: 4.7 },
-  { id: 12, name: "Bungee Jumping", image: "🎪", price: "25,999", rating: 4.9 },
-=======
-  { id: 1, name: "Kashmir", image: "🏔️", price: "₹28,999", rating: 4.8 },
-  { id: 2, name: "Himachal", image: "⛰️", price: "₹24,999", rating: 4.7 },
-  { id: 3, name: "Kerala", image: "🌴", price: "₹22,999", rating: 4.9 },
-  { id: 4, name: "North East", image: "🌄", price: "₹25,999", rating: 4.6 },
-  { id: 5, name: "Coorg & Ooty", image: "🏞️", price: "₹19,999", rating: 4.8 },
-  { id: 6, name: "Goa", image: "🏝️", price: "₹18,999", rating: 4.7 },
-  { id: 7, name: "Maldives", image: "🏖️", price: "₹45,999", rating: 4.9 },
-  { id: 8, name: "Thailand", image: "🎭", price: "₹35,999", rating: 4.8 },
-  { id: 9, name: "Bali", image: "🌺", price: "₹42,999", rating: 4.7 },
-  { id: 10, name: "Ladakh", image: "🏜️", price: "₹32,999", rating: 4.9 },
-  { id: 11, name: "Rajasthan", image: "🏰", price: "₹21,999", rating: 4.6 },
-  { id: 12, name: "Lakshadweep", image: "🌊", price: "₹52,999", rating: 4.9 },
-]
+const SPIRITUAL_PACKAGES = destinations
+  .filter(
+    (d) =>
+      d.destinationType?.includes("religious") ||
+      d.destinationType?.includes("cultural"),
+  )
+  .map(mapDestinationToPackage);
 
-const LAST_MINUTE_PACKAGES = [
-  { id: 1, name: "South India", image: "🐘", price: "₹15,999", rating: 4.7 },
-  { id: 2, name: "Kerala Backwaters", image: "🚣", price: "₹18,999", rating: 4.8 },
-  { id: 3, name: "Kashmir Tour", image: "🏞️", price: "₹26,999", rating: 4.9 },
-  { id: 4, name: "Shimla & Manali", image: "❄️", price: "₹22,999", rating: 4.6 },
-  { id: 5, name: "Goa Getaway", image: "🏖️", price: "₹16,999", rating: 4.7 },
-  { id: 6, name: "Sikkim Adventure", image: "🏔️", price: "₹24,999", rating: 4.8 },
-  { id: 7, name: "Thailand Beach", image: "🌴", price: "₹32,999", rating: 4.9 },
-  { id: 8, name: "Andaman Islands", image: "🏝️", price: "₹38,999", rating: 4.7 },
-  { id: 9, name: "Rajasthan Fort", image: "🏰", price: "₹19,999", rating: 4.6 },
-  { id: 10, name: "Vietnam Tour", image: "🗿", price: "₹28,999", rating: 4.8 },
-  { id: 11, name: "Sri Lanka", image: "🏛️", price: "₹25,999", rating: 4.9 },
-  { id: 12, name: "Dubai Escape", image: "🌆", price: "₹48,999", rating: 4.7 },
-]
+const ADVENTURE_PACKAGES = destinations
+  .filter((d) => d.destinationType?.includes("adventure"))
+  .map(mapDestinationToPackage);
 
-const SPIRITUAL_PACKAGES = [
-  { id: 1, name: "Varanasi Pilgrimage", image: "🕉️", price: "₹12,999", rating: 4.9 },
-  { id: 2, name: "Haridwar & Rishikesh", image: "🙏", price: "₹14,999", rating: 4.8 },
-  { id: 3, name: "Ayodhya Divine", image: "🛕", price: "₹13,999", rating: 4.9 },
-  { id: 4, name: "Mathura Krishna Tour", image: "🪈", price: "₹11,999", rating: 4.7 },
-  { id: 5, name: "Ujjain Sacred", image: "🔱", price: "₹10,999", rating: 4.8 },
-  { id: 6, name: "Amritsar Golden Temple", image: "✨", price: "₹9,999", rating: 4.9 },
-  { id: 7, name: "Tirupati Temple", image: "⛩️", price: "₹8,999", rating: 4.7 },
-  { id: 8, name: "Rameswaram Dham", image: "🌊", price: "₹11,999", rating: 4.8 },
-  { id: 9, name: "Puri Jagannath", image: "🏛️", price: "₹10,999", rating: 4.9 },
-  { id: 10, name: "Rishikesh Yoga", image: "🧘", price: "₹15,999", rating: 4.8 },
-  { id: 11, name: "Kedarnath Trek", image: "⛩️", price: "₹18,999", rating: 4.9 },
-  { id: 12, name: "Meenakshi Temple Tour", image: "🕉️", price: "₹12,999", rating: 4.7 },
-]
-
-const ADVENTURE_PACKAGES = [
-  { id: 1, name: "Skydiving Thrills", image: "🪂", price: "₹34,999", rating: 4.8 },
-  { id: 2, name: "Mountain Climbing", image: "🧗", price: "₹28,999", rating: 4.9 },
-  { id: 3, name: "Scuba Diving", image: "🤿", price: "₹32,999", rating: 4.7 },
-  { id: 4, name: "Paragliding Himalayas", image: "🪁", price: "₹22,999", rating: 4.8 },
-  { id: 5, name: "Rafting Adventure", image: "🚣", price: "₹12,999", rating: 4.9 },
-  { id: 6, name: "Trekking Expedition", image: "🥾", price: "₹16,999", rating: 4.7 },
-  { id: 7, name: "Desert Safari", image: "🏜️", price: "₹18,999", rating: 4.8 },
-  { id: 8, name: "Zip-lining Fun", image: "🎢", price: "₹8,999", rating: 4.9 },
-  { id: 9, name: "Jungle Safari", image: "🦁", price: "₹21,999", rating: 4.6 },
-  { id: 10, name: "Rock Climbing", image: "🧗", price: "₹15,999", rating: 4.8 },
-  { id: 11, name: "White Water Rafting", image: "💦", price: "₹14,999", rating: 4.7 },
-  { id: 12, name: "Bungee Jumping", image: "🎪", price: "₹25,999", rating: 4.9 },
->>>>>>> e6db14296a5319572f359d62bdf1e74552c3325b
-]
-
-function CarouselSection({ title, subtitle, packages, onSearch, mockFromLocation }) {
-  const [scrollPosition, setScrollPosition] = useState(0)
-
+function CarouselSection({
+  title,
+  subtitle,
+  packages,
+  onSearch,
+  mockFromLocation,
+}) {
   const scroll = (direction) => {
-    const container = document.getElementById(`carousel-${title}`)
-    const scrollAmount = 320
+    const container = document.getElementById(`carousel-${title}`);
+    const scrollAmount = 400;
     if (direction === "left") {
-      container.scrollLeft -= scrollAmount
+      container.scrollLeft -= scrollAmount;
     } else {
-      container.scrollLeft += scrollAmount
+      container.scrollLeft += scrollAmount;
     }
-  }
+  };
 
   const handleCardClick = (pkg) => {
     // Simulate search form submission with carousel package destination
-    const today = new Date()
-    const departureDate = new Date(today)
-    departureDate.setDate(departureDate.getDate() + 5)
+    const today = new Date();
+    const departureDate = new Date(today);
+    departureDate.setDate(departureDate.getDate() + 5);
 
     const payload = {
       from: mockFromLocation,
       to: { city: pkg.name, id: pkg.id },
-      departureDate: departureDate.toISOString().split('T')[0],
+      departureDate: departureDate.toISOString().split("T")[0],
       duration: 5,
       travelers: 2,
-    }
-    onSearch && onSearch(payload)
-  }
+    };
+    onSearch && onSearch(payload);
+  };
 
   return (
     <div className="px-4 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-dark mb-2">{title}</h2>
-        <p className="text-muted">{subtitle}</p>
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <h2 className="text-2xl sm:text-[32px] font-black text-black mb-1">
+            {title}
+          </h2>
+          <p className="text-gray-600 text-sm sm:text-base">{subtitle}</p>
+        </div>
+        {/* Navigation Arrows */}
+        <div className="hidden sm:flex items-center gap-1 border border-gray-200 rounded-full px-1 py-1 bg-white shadow-sm">
+          <button
+            onClick={() => scroll("left")}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-all focus:outline-none"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-400 hover:text-blue-500" />
+          </button>
+          <button
+            onClick={() => scroll("right")}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-all focus:outline-none"
+          >
+            <ChevronRight className="w-5 h-5 text-blue-500" />
+          </button>
+        </div>
       </div>
 
       <div className="relative">
         {/* Carousel Container */}
         <div
           id={`carousel-${title}`}
-          className="flex gap-4 overflow-x-auto scroll-smooth pb-4"
-          style={{ scrollBehavior: "smooth" }}
+          className="flex gap-3 sm:gap-4 overflow-x-auto scroll-smooth pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              onClick={() => handleCardClick(pkg)}
-              className="flex-shrink-0 w-72 h-80 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all cursor-pointer group"
-            >
-              {/* Card Background */}
-              <div className="relative h-full bg-gradient-to-br from-blue-400 to-blue-600 flex flex-col items-center justify-center overflow-hidden">
-                {/* Image Emoji */}
-                <div className="text-8xl mb-4 group-hover:scale-110 transition-transform">
-                  {pkg.image}
-                </div>
+          {packages.map((pkg) => {
+            const isUrl = pkg.image && pkg.image.startsWith("http");
+            return (
+              <div
+                key={pkg.id}
+                onClick={() => handleCardClick(pkg)}
+                className="flex-shrink-0 w-32 h-48 sm:w-[150px] sm:h-[220px] rounded-[14px] overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group relative bg-cover bg-center flex flex-col justify-end p-4"
+                style={{
+                  backgroundImage: isUrl ? `url(${pkg.image})` : undefined,
+                  backgroundColor: !isUrl ? "#e7edf8" : undefined, // fallback background for emoji
+                }}
+              >
+                {isUrl && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                )}
 
-                {/* Overlay Content */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-                  <h3 className="text-xl font-bold text-white mb-2">{pkg.name}</h3>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-primary">₹{pkg.price}</span>
-                    <div className="flex items-center gap-1 bg-yellow-400 text-dark px-3 py-1 rounded-full">
-                      <span>⭐</span>
-                      <span className="font-semibold">{pkg.rating}</span>
+                <div className="relative z-10">
+                  {!isUrl && (
+                    <div className="text-5xl mb-2 group-hover:scale-110 transition-transform origin-bottom text-center">
+                      {pkg.image}
                     </div>
-                  </div>
+                  )}
+                  <h3
+                    className={`text-sm sm:text-[15px] font-bold tracking-wide ${isUrl ? "text-white" : "text-dark"}`}
+                  >
+                    {pkg.name}
+                  </h3>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-5 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-all z-10"
-        >
-          ←
-        </button>
-        <button
-          onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-5 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-all z-10"
-        >
-          →
-        </button>
       </div>
     </div>
-  )
+  );
 }
