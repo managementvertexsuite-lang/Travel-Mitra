@@ -416,6 +416,7 @@ function FeatureCard({ icon, title, description }) {
 
 const mapDestinationToPackage = (dest) => ({
   id: dest._id || dest.destinationId,
+  destinationId: dest.destinationId,
   name: dest.name,
   image: dest.coverImage || (dest.gallery && dest.gallery[0]) || "",
 });
@@ -469,7 +470,11 @@ function CarouselSection({
 
     const payload = {
       from: mockFromLocation,
-      to: { city: pkg.name, id: pkg.id },
+      to: {
+        city: pkg.name,
+        id: pkg.id,
+        destinationId: pkg.destinationId,
+      },
       departureDate: departureDate.toISOString().split("T")[0],
       duration: 5,
       travelers: 2,

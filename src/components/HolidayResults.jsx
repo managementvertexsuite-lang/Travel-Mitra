@@ -2,34 +2,10 @@ import { MapPin, Star, Clock, ChevronRight, ChevronLeft, Check } from "lucide-re
 import { useState, useMemo, useEffect } from "react"
 import { formatDate } from "../utils/dateUtils"
 import FilterSidebar from "./FilterSidebar"
-import { packages } from "../data/packages"
+import { getPackagesForDestination } from "../utils/generateDestinationPackages"
 
 function generatePackages(destination, duration, travelers) {
-  const destName = destination?.city?.toUpperCase() || "BALI"
-  let basePackages = packages.filter(pkg => pkg.destinationId === destName)
-  
-  if (!basePackages || basePackages.length === 0) {
-    basePackages = packages // Fallback to all packages if destination not found
-  }
-
-  const durationInNights = duration ? Math.max(1, duration - 1) : 5
-
-  return basePackages.map((pkg, idx) => ({
-    id: pkg.packageId || idx + 1,
-    name: pkg.packageName,
-    destination: destination?.city || "Bali",
-    price: pkg.minBudget || Math.floor(Math.random() * 40000 + 15000),
-    originalPrice: pkg.maxBudget || Math.floor(Math.random() * 60000 + 25000),
-    rating: pkg.rating || parseFloat((Math.random() * 0.4 + 4.5).toFixed(1)),
-    reviews: pkg.totalReviews || Math.floor(Math.random() * 500 + 100),
-    duration: duration || pkg.durationDays,
-    nights: duration ? durationInNights : pkg.durationNights,
-    image: pkg.coverImage || (pkg.gallery && pkg.gallery[0]),
-    itinerary: `${duration ? durationInNights : pkg.durationNights}N ${destination?.city || "Bali"}`,
-    inclusions: pkg.inclusions || ["Round Trip Flights", "3 Star Hotels", "7 Activities", "Intercity Car Transfers", "Airport Transfers", "Selected Meals"],
-    highlights: pkg.highlights || ["Tea Tasting Session at Local Tea lounge", "Complimentary 1 Lunch or refreshment on Day 1", "Tour Manager"],
-    gallery: pkg.gallery || [],
-  }))
+  return getPackagesForDestination(destination, duration)
 }
 
 export default function HolidayResults({ payload, isLoading, onDestinationClick, onBackToHome, onPackageClick }) {
@@ -152,18 +128,24 @@ function PackageSkeletonLoader() {
 
 function HolidayCard({ package: pkg, travelers, onClick }) {
   const totalPrice = pkg.price * travelers
+  const hasImage = pkg.image && pkg.image.startsWith("http")
 
   return (
     <div
       onClick={onClick}
       className={`bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
     >
-      <div className={`relative h-56 flex items-center justify-center`}
-        style={{
-          backgroundImage: `url('${pkg.image}')`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
+      <div
+        className={`relative h-56 flex items-center justify-center ${!hasImage ? "bg-gradient-to-br from-blue-400 to-blue-600" : ""}`}
+        style={
+          hasImage
+            ? {
+                backgroundImage: `url('${pkg.image}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
       >
         <div className="absolute top-4 left-0 bg-white text-purple-700 px-3 py-1 text-xs font-bold rounded-r-lg border border-purple-200 border-l-0 shadow-sm">
           Deal of the day
