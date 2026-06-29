@@ -312,6 +312,7 @@ function FeatureCard({ icon, title, description }) {
 }
 
 const ALL_MOODS_PACKAGES = [
+<<<<<<< HEAD
   { id: 1, name: "Kashmir", image: "🏔️", price: "28,999", rating: 4.8 },
   { id: 2, name: "Himachal", image: "⛰️", price: "24,999", rating: 4.7 },
   { id: 3, name: "Kerala", image: "🌴", price: "22,999", rating: 4.9 },
@@ -369,6 +370,65 @@ const ADVENTURE_PACKAGES = [
   { id: 10, name: "Rock Climbing", image: "🧗", price: "15,999", rating: 4.8 },
   { id: 11, name: "White Water Rafting", image: "💦", price: "14,999", rating: 4.7 },
   { id: 12, name: "Bungee Jumping", image: "🎪", price: "25,999", rating: 4.9 },
+=======
+  { id: 1, name: "Kashmir", image: "🏔️", price: "₹28,999", rating: 4.8 },
+  { id: 2, name: "Himachal", image: "⛰️", price: "₹24,999", rating: 4.7 },
+  { id: 3, name: "Kerala", image: "🌴", price: "₹22,999", rating: 4.9 },
+  { id: 4, name: "North East", image: "🌄", price: "₹25,999", rating: 4.6 },
+  { id: 5, name: "Coorg & Ooty", image: "🏞️", price: "₹19,999", rating: 4.8 },
+  { id: 6, name: "Goa", image: "🏝️", price: "₹18,999", rating: 4.7 },
+  { id: 7, name: "Maldives", image: "🏖️", price: "₹45,999", rating: 4.9 },
+  { id: 8, name: "Thailand", image: "🎭", price: "₹35,999", rating: 4.8 },
+  { id: 9, name: "Bali", image: "🌺", price: "₹42,999", rating: 4.7 },
+  { id: 10, name: "Ladakh", image: "🏜️", price: "₹32,999", rating: 4.9 },
+  { id: 11, name: "Rajasthan", image: "🏰", price: "₹21,999", rating: 4.6 },
+  { id: 12, name: "Lakshadweep", image: "🌊", price: "₹52,999", rating: 4.9 },
+]
+
+const LAST_MINUTE_PACKAGES = [
+  { id: 1, name: "South India", image: "🐘", price: "₹15,999", rating: 4.7 },
+  { id: 2, name: "Kerala Backwaters", image: "🚣", price: "₹18,999", rating: 4.8 },
+  { id: 3, name: "Kashmir Tour", image: "🏞️", price: "₹26,999", rating: 4.9 },
+  { id: 4, name: "Shimla & Manali", image: "❄️", price: "₹22,999", rating: 4.6 },
+  { id: 5, name: "Goa Getaway", image: "🏖️", price: "₹16,999", rating: 4.7 },
+  { id: 6, name: "Sikkim Adventure", image: "🏔️", price: "₹24,999", rating: 4.8 },
+  { id: 7, name: "Thailand Beach", image: "🌴", price: "₹32,999", rating: 4.9 },
+  { id: 8, name: "Andaman Islands", image: "🏝️", price: "₹38,999", rating: 4.7 },
+  { id: 9, name: "Rajasthan Fort", image: "🏰", price: "₹19,999", rating: 4.6 },
+  { id: 10, name: "Vietnam Tour", image: "🗿", price: "₹28,999", rating: 4.8 },
+  { id: 11, name: "Sri Lanka", image: "🏛️", price: "₹25,999", rating: 4.9 },
+  { id: 12, name: "Dubai Escape", image: "🌆", price: "₹48,999", rating: 4.7 },
+]
+
+const SPIRITUAL_PACKAGES = [
+  { id: 1, name: "Varanasi Pilgrimage", image: "🕉️", price: "₹12,999", rating: 4.9 },
+  { id: 2, name: "Haridwar & Rishikesh", image: "🙏", price: "₹14,999", rating: 4.8 },
+  { id: 3, name: "Ayodhya Divine", image: "🛕", price: "₹13,999", rating: 4.9 },
+  { id: 4, name: "Mathura Krishna Tour", image: "🪈", price: "₹11,999", rating: 4.7 },
+  { id: 5, name: "Ujjain Sacred", image: "🔱", price: "₹10,999", rating: 4.8 },
+  { id: 6, name: "Amritsar Golden Temple", image: "✨", price: "₹9,999", rating: 4.9 },
+  { id: 7, name: "Tirupati Temple", image: "⛩️", price: "₹8,999", rating: 4.7 },
+  { id: 8, name: "Rameswaram Dham", image: "🌊", price: "₹11,999", rating: 4.8 },
+  { id: 9, name: "Puri Jagannath", image: "🏛️", price: "₹10,999", rating: 4.9 },
+  { id: 10, name: "Rishikesh Yoga", image: "🧘", price: "₹15,999", rating: 4.8 },
+  { id: 11, name: "Kedarnath Trek", image: "⛩️", price: "₹18,999", rating: 4.9 },
+  { id: 12, name: "Meenakshi Temple Tour", image: "🕉️", price: "₹12,999", rating: 4.7 },
+]
+
+const ADVENTURE_PACKAGES = [
+  { id: 1, name: "Skydiving Thrills", image: "🪂", price: "₹34,999", rating: 4.8 },
+  { id: 2, name: "Mountain Climbing", image: "🧗", price: "₹28,999", rating: 4.9 },
+  { id: 3, name: "Scuba Diving", image: "🤿", price: "₹32,999", rating: 4.7 },
+  { id: 4, name: "Paragliding Himalayas", image: "🪁", price: "₹22,999", rating: 4.8 },
+  { id: 5, name: "Rafting Adventure", image: "🚣", price: "₹12,999", rating: 4.9 },
+  { id: 6, name: "Trekking Expedition", image: "🥾", price: "₹16,999", rating: 4.7 },
+  { id: 7, name: "Desert Safari", image: "🏜️", price: "₹18,999", rating: 4.8 },
+  { id: 8, name: "Zip-lining Fun", image: "🎢", price: "₹8,999", rating: 4.9 },
+  { id: 9, name: "Jungle Safari", image: "🦁", price: "₹21,999", rating: 4.6 },
+  { id: 10, name: "Rock Climbing", image: "🧗", price: "₹15,999", rating: 4.8 },
+  { id: 11, name: "White Water Rafting", image: "💦", price: "₹14,999", rating: 4.7 },
+  { id: 12, name: "Bungee Jumping", image: "🎪", price: "₹25,999", rating: 4.9 },
+>>>>>>> e6db14296a5319572f359d62bdf1e74552c3325b
 ]
 
 function CarouselSection({ title, subtitle, packages, onSearch, mockFromLocation }) {
