@@ -1,7 +1,9 @@
-import { MapPin, Star, Clock, ChevronRight, ChevronLeft, Check } from "lucide-react"
-import { useState, useMemo, useEffect } from "react"
-import { formatDate } from "../utils/dateUtils"
+import { ChevronLeft, Check } from "lucide-react"
+import { useState, useMemo, useEffect, useRef } from "react"
+import { formatDate, formatDateISO, getToday } from "../utils/dateUtils"
 import FilterSidebar from "./FilterSidebar"
+import LocationSelector from "./LocationSelector"
+import CalendarDropdown from "./CalendarDropdown"
 import { getPackagesForDestination } from "../utils/generateDestinationPackages"
 import { getPackagesForCategory } from "../utils/categoryPackages"
 import { HOLIDAY_PACKAGES_HERO_IMAGE } from "../utils/constants"
@@ -13,15 +15,10 @@ function generatePackages(payload) {
   return getPackagesForDestination(payload.to, payload.duration)
 }
 
-export default function HolidayResults({ payload, isLoading, onDestinationClick, onBackToHome, onPackageClick }) {
+export default function HolidayResults({ payload, isLoading, onDestinationClick, onBackToHome, onPackageClick, onSearch }) {
   if (!payload) return null
 
-  const totalTravelers = payload.travelers || 2
-  const allPackages = generatePackages(payload)
-
-  const pageTitle = payload.categoryLabel
-    ? payload.categoryLabel
-    : `${payload.to?.city} Holiday Packages`
+  const allPackages = useMemo(() => generatePackages(payload), [payload])
 
   const [filters, setFilters] = useState({
     duration: [1, 12],
@@ -29,8 +26,40 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
     budget: [0, 100000],
     hotelCategory: "all",
     themes: [],
+    cities: [],
+    budgetBucket: null,
   })
   const [isFilterLoading, setIsFilterLoading] = useState(false)
+  const [localFrom, setLocalFrom] = useState(payload.from || { city: "New Delhi" })
+  const [localTo, setLocalTo] = useState(payload.to || null)
+  const [localDate, setLocalDate] = useState(() => {
+    if (!payload.departureDate) return null
+    const [y, m, d] = payload.departureDate.split("-").map(Number)
+    return new Date(y, m - 1, d)
+  })
+  const [localTravelers, setLocalTravelers] = useState(payload.travelers || 2)
+  const [fromOpen, setFromOpen] = useState(false)
+  const [toOpen, setToOpen] = useState(false)
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [travelersOpen, setTravelersOpen] = useState(false)
+  const stripRef = useRef(null)
+
+  const pageTitle = payload.categoryLabel
+    ? payload.categoryLabel
+    : `${localTo?.city || payload.to?.city || ""} Holiday Packages`
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (stripRef.current && !stripRef.current.contains(e.target)) {
+        setFromOpen(false)
+        setToOpen(false)
+        setCalendarOpen(false)
+        setTravelersOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleOutsideClick)
+    return () => document.removeEventListener("mousedown", handleOutsideClick)
+  }, [])
 
   useEffect(() => {
     setIsFilterLoading(true)
@@ -44,78 +73,244 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
       if (nights < filters.duration[0] || nights > filters.duration[1]) return false
       if (filters.budget[0] > 0 && pkg.price < filters.budget[0]) return false
       if (filters.budget[1] < 100000 && pkg.price > filters.budget[1]) return false
+      if (filters.flights === "with" && !pkg.flightIncluded) return false
+      if (filters.flights === "without" && pkg.flightIncluded) return false
+      if (filters.hotelCategory !== "all" && pkg.hotelCategory !== filters.hotelCategory) return false
+      if (filters.cities?.length && !filters.cities.includes(pkg.destination)) return false
+      if (filters.themes?.length) {
+        const pkgThemes = pkg.themes || ""
+        if (!filters.themes.some((theme) => pkgThemes.includes(theme.toLowerCase()))) return false
+      }
       return true
     })
   }, [filters, allPackages])
 
+  const closeAll = () => {
+    setFromOpen(false)
+    setToOpen(false)
+    setCalendarOpen(false)
+    setTravelersOpen(false)
+  }
+
+  const handleReSearch = () => {
+    onSearch?.({
+      ...payload,
+      from: localFrom,
+      to: localTo || payload.to,
+      departureDate: localDate ? formatDateISO(localDate) : payload.departureDate,
+      travelers: localTravelers,
+    })
+    closeAll()
+  }
+
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-gray-100 min-h-screen">
+
+      {/* Search strip — sticky below MinimalHeader, interactive dropdowns */}
+      <div ref={stripRef} className="sticky top-16 z-30 w-full bg-[#0d2137] shadow-md">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-evenly h-20">
+
+          {/* Starting From */}
+          <div
+            className="relative flex flex-col items-start cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            onClick={() => { setFromOpen((o) => !o); setToOpen(false); setCalendarOpen(false); setTravelersOpen(false) }}
+          >
+            <p className="text-[10px] text-blue-300 uppercase font-bold tracking-wider">Starting From</p>
+            <p className="text-white font-bold text-[13px]">{localFrom?.city || "New Delhi"}</p>
+            <LocationSelector
+              isOpen={fromOpen}
+              onClose={() => setFromOpen(false)}
+              onSelect={(loc) => { setLocalFrom(loc); setFromOpen(false) }}
+              title="Select Departure City"
+              selectedLocation={localFrom}
+            />
+          </div>
+
+          <div className="w-px h-8 bg-white/20 flex-shrink-0" />
+
+          {/* Going To */}
+          <div
+            className="relative flex flex-col items-start cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            onClick={() => { setToOpen((o) => !o); setFromOpen(false); setCalendarOpen(false); setTravelersOpen(false) }}
+          >
+            <p className="text-[10px] text-blue-300 uppercase font-bold tracking-wider">Going To</p>
+            <p className="text-white font-bold text-[13px]">{localTo?.city || payload.to?.city || payload.categoryLabel || "—"}</p>
+            <LocationSelector
+              isOpen={toOpen}
+              onClose={() => setToOpen(false)}
+              onSelect={(loc) => { setLocalTo(loc); setToOpen(false) }}
+              title="Select Destination"
+              selectedLocation={localTo || payload.to}
+            />
+          </div>
+
+          <div className="w-px h-8 bg-white/20 flex-shrink-0" />
+
+          {/* Starting Date */}
+          <div
+            className="relative flex flex-col items-start cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            onClick={() => { setCalendarOpen((o) => !o); setFromOpen(false); setToOpen(false); setTravelersOpen(false) }}
+          >
+            <p className="text-[10px] text-blue-300 uppercase font-bold tracking-wider">Starting Date</p>
+            <p className="text-white font-bold text-[13px]">
+              {localDate
+                ? formatDate(localDate)
+                : payload.departureDate
+                  ? formatDate(payload.departureDate)
+                  : "Select"}
+            </p>
+            <CalendarDropdown
+              isOpen={calendarOpen}
+              onClose={() => setCalendarOpen(false)}
+              onSelect={(date) => { setLocalDate(date); setCalendarOpen(false) }}
+              selectedDate={localDate}
+              minDate={getToday()}
+            />
+          </div>
+
+          <div className="w-px h-8 bg-white/20 flex-shrink-0" />
+
+          {/* Rooms & Guests */}
+          <div
+            className="relative flex flex-col items-start cursor-pointer px-3 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            onClick={() => { setTravelersOpen((o) => !o); setFromOpen(false); setToOpen(false); setCalendarOpen(false) }}
+          >
+            <p className="text-[10px] text-blue-300 uppercase font-bold tracking-wider">Rooms &amp; Guests</p>
+            <p className="text-white font-bold text-[13px]">{localTravelers} Traveler{localTravelers > 1 ? "s" : ""}</p>
+            {travelersOpen && (
+              <div
+                className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl p-4 z-50 w-48"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Travelers</p>
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setLocalTravelers((n) => Math.max(1, n - 1))}
+                    className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold text-lg transition-colors"
+                  >−</button>
+                  <span className="text-2xl font-black text-gray-900">{localTravelers}</span>
+                  <button
+                    onClick={() => setLocalTravelers((n) => Math.min(20, n + 1))}
+                    className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold text-lg transition-colors"
+                  >+</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="w-px h-8 bg-white/20 flex-shrink-0" />
+
+          <button
+            onClick={handleReSearch}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-7 py-2 rounded-full font-bold tracking-wider text-sm transition-colors flex-shrink-0"
+          >
+            SEARCH
+          </button>
+        </div>
+      </div>
+
+      {/* Banner — normal flow, 350px, text at top */}
       <div
-        className="py-6 px-4 bg-cover bg-center relative"
+        className="bg-cover bg-center overflow-hidden flex flex-col justify-start pt-8"
         style={{
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.50)), url(${HOLIDAY_PACKAGES_HERO_IMAGE})`,
+          height: 350,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url(${HOLIDAY_PACKAGES_HERO_IMAGE})`,
         }}
       >
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto px-4 w-full">
           <button
             onClick={onBackToHome}
-            className="flex items-center gap-2 text-white font-semibold mb-4 hover:text-gray-200"
+            className="flex items-center gap-2 text-white font-semibold mb-2 hover:text-gray-200"
           >
             <ChevronLeft size={20} />
             Back to Search
           </button>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {pageTitle}
-          </h1>
-          <p className="text-gray-200">
-            {totalTravelers} travelers • {payload.duration} days
-          </p>
+          <h1 className="text-3xl font-bold text-white mb-1">{pageTitle}</h1>
+          <p className="text-gray-200 text-sm">{localTravelers} travelers • {payload.duration} days</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,360px)_1fr] gap-8">
-          <aside className="min-w-0">
-            <FilterSidebar filters={filters} setFilters={setFilters} />
-          </aside>
-
-          <main className="min-w-0">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                All Packages ({isFilterLoading ? "..." : filteredPackages.length})
-              </h2>
-              <select className="px-4 py-2 border-2 border-gray-200 rounded-lg text-gray-900 font-medium">
-                <option>Sort by: Popular</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Rating: High to Low</option>
-              </select>
-            </div>
-
-            {isLoading ? (
-              <ShimmerLoader />
-            ) : isFilterLoading ? (
-              <PackageSkeletonLoader />
-            ) : filteredPackages.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredPackages.map((pkg) => (
-                  <HolidayCard
-                    key={pkg.id}
-                    package={pkg}
-                    travelers={totalTravelers}
-                    onClick={() => onPackageClick?.(pkg)}
-                  />
-                ))}
+      {/* Packages card — pulled up 150px over the banner */}
+      <div className="max-w-7xl mx-auto px-4 pb-6 -mt-[150px] relative z-10">
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,360px)_1fr]">
+            <aside className="min-w-0 border-r border-gray-200 p-6">
+              <div className="mb-6 flex min-h-[44px] items-center">
+                <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                  Filters
+                </h2>
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No packages match your filters</p>
+              <div className="pr-1">
+                <FilterSidebar filters={filters} setFilters={setFilters} packages={allPackages} />
               </div>
-            )}
-          </main>
+            </aside>
+
+            <main className="min-w-0 p-6">
+              <div className="mb-6 flex min-h-[44px] items-center justify-between gap-4">
+                <h2 className="text-2xl font-bold text-gray-900 leading-tight">
+                  All Packages ({isFilterLoading ? "..." : filteredPackages.length})
+                </h2>
+                <select className="px-4 py-2 border-2 border-gray-200 rounded-lg text-gray-900 font-medium flex-shrink-0">
+                  <option>Sort by: Popular</option>
+                  <option>Price: Low to High</option>
+                  <option>Price: High to Low</option>
+                  <option>Rating: High to Low</option>
+                </select>
+              </div>
+
+              {isLoading ? (
+                <ShimmerLoader />
+              ) : isFilterLoading ? (
+                <PackageSkeletonLoader />
+              ) : filteredPackages.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredPackages.map((pkg) => (
+                    <HolidayCard
+                      key={pkg.id}
+                      package={pkg}
+                      travelers={localTravelers}
+                      onClick={() => onPackageClick?.(pkg)}
+                    />
+                  ))}
+                  <NewDestinationCard payload={payload} onClick={() => setToOpen(true)} />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="text-center py-12 md:col-span-2 border border-dashed border-blue-200 bg-blue-50/60 rounded-2xl">
+                    <p className="text-gray-700 font-semibold">No packages match your filters</p>
+                    <p className="text-gray-500 text-sm mt-1">Try a new destination selection or clear the filters.</p>
+                  </div>
+                  <NewDestinationCard payload={payload} onClick={() => setToOpen(true)} />
+                </div>
+              )}
+            </main>
+          </div>
         </div>
       </div>
     </div>
+  )
+}
+
+function NewDestinationCard({ payload, onClick }) {
+  const destinationName = payload.to?.city || payload.categoryLabel || "another destination"
+
+  return (
+    <button
+      onClick={onClick}
+      className="text-left bg-white rounded-2xl overflow-hidden border border-blue-200 shadow-sm hover:shadow-md transition-all"
+    >
+      <div className="h-56 bg-gradient-to-br from-sky-500 via-blue-500 to-cyan-400 flex items-end p-5">
+        <div>
+          <p className="text-white/85 text-sm font-semibold">New selection</p>
+          <h3 className="text-2xl font-black text-white leading-tight">Find packages for a different destination</h3>
+        </div>
+      </div>
+      <div className="p-5">
+        <p className="text-gray-600 text-sm">
+          Currently showing {destinationName}. Choose another city from the search bar to refresh cards, counts, and images.
+        </p>
+      </div>
+    </button>
   )
 }
 
@@ -147,7 +342,7 @@ function HolidayCard({ package: pkg, travelers, onClick }) {
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all ${onClick ? 'cursor-pointer' : ''}`}
     >
       <div
         className={`relative h-56 flex items-center justify-center ${!hasImage ? "bg-gradient-to-br from-blue-400 to-blue-600" : ""}`}

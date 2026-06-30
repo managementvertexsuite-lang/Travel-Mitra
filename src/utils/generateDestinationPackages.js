@@ -147,6 +147,9 @@ function generateFromDestination(dest, duration) {
       inclusions: DEFAULT_INCLUSIONS,
       highlights: highlights.slice(0, 5),
       gallery,
+      flightIncluded: idx % 2 === 0,
+      hotelCategory: idx % 5 === 3 ? 5 : idx % 3 === 0 ? 4 : 3,
+      themes: [template.suffix, ...highlights].join(" ").toLowerCase(),
     };
   });
 }
@@ -183,5 +186,11 @@ export function getPackagesForDestination(destination, duration) {
     inclusions: pkg.inclusions || DEFAULT_INCLUSIONS,
     highlights: pkg.highlights || [],
     gallery: pkg.gallery || [],
+    flightIncluded: idx % 2 === 0,
+    hotelCategory: idx % 5 === 3 ? 5 : idx % 3 === 0 ? 4 : 3,
+    themes: [pkg.category, ...(pkg.tags || []), ...(pkg.highlights || [])]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase(),
   }));
 }

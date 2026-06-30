@@ -1,4 +1,5 @@
 import { destinations } from "../data/destinations";
+import { findDestination } from "./destinationUtils";
 
 export const CATEGORY_TABS = [
   { id: "search", label: "Search", isSearch: true },
@@ -87,6 +88,15 @@ function collectGalleryImages() {
   return destinations.flatMap((d) => d.gallery || [d.coverImage]).filter(Boolean);
 }
 
+function findDestinationGallery(name) {
+  const destination = findDestination({ city: name });
+  return destination?.gallery?.length
+    ? destination.gallery
+    : destination?.coverImage
+      ? [destination.coverImage]
+      : collectGalleryImages();
+}
+
 export function getPackagesForCategory(categoryId, duration) {
   const config = CATEGORY_PACKAGE_CONFIG[categoryId];
   if (!config) return [];
@@ -97,6 +107,7 @@ export function getPackagesForCategory(categoryId, duration) {
   return config.packages.map((pkg, idx) => {
     const nights = durationInNights ?? pkg.nights;
     const days = duration ?? pkg.days;
+    const destinationGallery = findDestinationGallery(pkg.dest);
 
     return {
       id: `${categoryId}_PKG_${idx + 1}`,
@@ -108,11 +119,14 @@ export function getPackagesForCategory(categoryId, duration) {
       reviews: 200 + idx * 45,
       duration: days,
       nights,
-      image: gallery[idx % gallery.length] || "",
+      image: destinationGallery[idx % destinationGallery.length] || gallery[idx % gallery.length] || "",
       itinerary: `${nights}N ${pkg.dest}`,
       inclusions: DEFAULT_INCLUSIONS,
       highlights: config.highlights,
-      gallery: gallery.slice(idx, idx + 5),
+      gallery: destinationGallery.length ? destinationGallery : gallery.slice(idx, idx + 8),
+      flightIncluded: idx % 2 === 0,
+      hotelCategory: idx % 5 === 3 ? 5 : idx % 3 === 0 ? 4 : 3,
+      themes: [categoryId, pkg.name, ...config.highlights].join(" ").toLowerCase(),
     };
   });
 }

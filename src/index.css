@@ -24,6 +24,11 @@ body {
   color: #1a2d52;
 }
 
+body.nav-waiting,
+body.nav-waiting * {
+  cursor: wait !important;
+}
+
 .shimmer-loading {
   background: linear-gradient(
     90deg,

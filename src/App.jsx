@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import MinimalHeader from './components/MinimalHeader'
 import HolidaySearchCard from './components/HolidaySearchCard'
 import HolidayResults from './components/HolidayResults'
@@ -13,6 +13,27 @@ export default function App() {
   const [selectedDestination, setSelectedDestination] = useState(null)
   const [selectedPackage, setSelectedPackage] = useState(null)
   const [viewMode, setViewMode] = useState("home") // "home" | "results" | "detail" | "packageDetail"
+  const waitCursorTimer = useRef(null)
+
+  useEffect(() => {
+    const startWaitCursor = (event) => {
+      const target = event.target.closest?.('a, button, [role="button"], .cursor-pointer')
+      if (!target || target.disabled) return
+
+      document.body.classList.add("nav-waiting")
+      window.clearTimeout(waitCursorTimer.current)
+      waitCursorTimer.current = window.setTimeout(() => {
+        document.body.classList.remove("nav-waiting")
+      }, 900)
+    }
+
+    document.addEventListener("click", startWaitCursor, true)
+    return () => {
+      document.removeEventListener("click", startWaitCursor, true)
+      window.clearTimeout(waitCursorTimer.current)
+      document.body.classList.remove("nav-waiting")
+    }
+  }, [])
 
   const handleSearch = (payload) => {
     setSearchPayload(payload)
@@ -95,6 +116,7 @@ export default function App() {
             onDestinationClick={handleDestinationClick}
             onBackToHome={handleBackToHome}
             onPackageClick={handlePackageClick}
+            onSearch={handleSearch}
           />
         </div>
         <Footer />
