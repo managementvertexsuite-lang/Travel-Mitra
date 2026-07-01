@@ -177,10 +177,16 @@ function ItineraryTab({ package: pkg }) {
   const days = useMemo(() => generateItinerary(pkg), [pkg]);
   const sectionRefs = useRef([]);
   const [activeDay, setActiveDay] = useState(1);
+  const [activeSummary, setActiveSummary] = useState("plan");
   const startDate = useMemo(() => resolveTripStartDate(pkg), [pkg]);
   const datedDays = useMemo(
     () => days.map((day, idx) => ({ ...day, dateLabel: formatTripDate(addDays(startDate, idx)) })),
     [days, startDate],
+  );
+  const summaryItems = useMemo(() => buildItinerarySummaryItems(pkg), [pkg]);
+  const visibleDays = useMemo(
+    () => datedDays.filter((day) => dayMatchesSummary(day, activeSummary)),
+    [datedDays, activeSummary],
   );
   const itineraryImages = useMemo(() => {
     const usedImages = new Set([pkg.gallery?.[0], pkg.image].filter(Boolean));
@@ -192,11 +198,12 @@ function ItineraryTab({ package: pkg }) {
       const viewportAnchor = 170;
       let currentDay = datedDays[0]?.day || 1;
 
-      sectionRefs.current.forEach((node, idx) => {
+      visibleDays.forEach((day) => {
+        const node = sectionRefs.current[day.day];
         if (!node) return;
         const rect = node.getBoundingClientRect();
         if (rect.top <= viewportAnchor) {
-          currentDay = datedDays[idx]?.day || currentDay;
+          currentDay = day.day;
         }
       });
 
@@ -210,50 +217,84 @@ function ItineraryTab({ package: pkg }) {
       window.removeEventListener("scroll", updateActiveDay);
       window.removeEventListener("resize", updateActiveDay);
     };
-  }, [datedDays]);
+  }, [datedDays, visibleDays]);
 
-  const scrollToDay = (idx) => {
-    sectionRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  useEffect(() => {
+    const firstVisibleDay = visibleDays[0]?.day;
+    if (firstVisibleDay && !visibleDays.some((day) => day.day === activeDay)) {
+      setActiveDay(firstVisibleDay);
+    }
+  }, [activeDay, visibleDays]);
+
+  const scrollToDay = (dayNumber) => {
+    sectionRefs.current[dayNumber]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const selectSummary = (summaryId) => {
+    const nextVisibleDay = datedDays.find((day) => dayMatchesSummary(day, summaryId))?.day;
+    setActiveSummary(summaryId);
+    if (nextVisibleDay) {
+      setActiveDay(nextVisibleDay);
+      window.setTimeout(() => scrollToDay(nextVisibleDay), 0);
+    }
   };
 
   return (
     <div className="overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="grid grid-cols-2 gap-3 bg-[#eaf7ff] px-5 py-4 text-sm font-semibold text-gray-800 md:grid-cols-5">
-        <div className="rounded-full border border-blue-500 bg-white px-4 py-2 text-center font-bold text-blue-600">
-          {pkg.duration} Day Plan
-        </div>
-        <div className="px-2 py-2 text-center">{pkg.flightIncluded ? "2 Flights &" : ""} {Math.max(2, pkg.duration - 1)} Transfers</div>
-        <div className="px-2 py-2 text-center">{pkg.nights} Hotels</div>
-        <div className="px-2 py-2 text-center">{pkg.duration + 1} Activities</div>
-        <div className="px-2 py-2 text-center">{pkg.duration + 2} Meals</div>
+        {summaryItems.map((item) => {
+          const isActive = activeSummary === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => selectSummary(item.id)}
+              className={`min-h-[52px] rounded-full px-4 py-2 text-center font-bold transition-all ${
+                isActive
+                  ? "border border-blue-500 bg-white text-blue-600 shadow-sm"
+                  : "border border-transparent text-gray-900 hover:border-blue-200 hover:bg-white/70"
+              }`}
+            >
+              {item.label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[184px_1fr]">
         <aside className="border-b border-gray-200 bg-[#fafafa] p-5 md:border-b-0 md:border-r">
           <div className="sticky top-24">
             <h3 className="mb-3 text-lg font-bold text-gray-800">Day Plan</h3>
-            <div className="relative space-y-1 pl-4">
-              <div className="absolute left-[21px] top-3 bottom-3 w-px bg-gray-300" />
-              {datedDays.map((day, idx) => {
-                const isActive = day.day === activeDay;
-                const isVisited = day.day <= activeDay;
+            <div className="relative space-y-1">
+              <div className="absolute left-[11px] top-4 bottom-4 w-px bg-gray-300" />
+              {datedDays.map((day) => {
+                const isEnabled = dayMatchesSummary(day, activeSummary);
+                const isActive = isEnabled && day.day === activeDay;
+                const isVisited = isEnabled && day.day <= activeDay;
                 return (
                   <button
                     key={day.day}
+                    type="button"
+                    disabled={!isEnabled}
                     onClick={() => {
+                      if (!isEnabled) return;
                       setActiveDay(day.day);
-                      scrollToDay(idx);
+                      scrollToDay(day.day);
                     }}
-                    className={`relative z-10 flex w-full items-center gap-2 rounded-r-full px-2 py-1.5 text-left text-sm transition-colors ${
+                    className={`relative z-10 grid w-full grid-cols-[22px_1fr] items-center rounded-r-full py-1.5 pr-2 text-left text-sm transition-colors ${
                       isActive
-                        ? "bg-gray-700 text-white"
+                        ? "bg-gray-700 pl-0 text-white"
                         : isVisited
-                          ? "font-bold text-gray-900"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "font-bold text-gray-900 hover:bg-gray-100"
+                          : isEnabled
+                            ? "text-gray-600 hover:bg-gray-100"
+                            : "cursor-not-allowed text-gray-400"
                     }`}
                   >
-                    <span className={`h-2 w-2 rounded-full ${isVisited ? "bg-gray-700" : "bg-gray-400"}`} />
-                    <span>{day.dateLabel}</span>
+                    <span className="flex justify-center">
+                      <span className={`h-2 w-2 rounded-full ${isActive ? "bg-white" : isVisited ? "bg-gray-700" : isEnabled ? "bg-gray-400" : "bg-gray-300"}`} />
+                    </span>
+                    <span className="truncate">{day.dateLabel}</span>
                   </button>
                 );
               })}
@@ -262,25 +303,29 @@ function ItineraryTab({ package: pkg }) {
         </aside>
 
         <div className="min-w-0">
-          {datedDays.map((day, idx) => (
-            <DayPlan
-              key={day.day}
-              day={day}
-              image={itineraryImages[idx]}
-              previousImage={itineraryImages[(idx + 1) % itineraryImages.length]}
-              sectionRef={(node) => {
-                sectionRefs.current[idx] = node;
-              }}
-            />
-          ))}
+          {visibleDays.map((day) => {
+            const idx = datedDays.findIndex((datedDay) => datedDay.day === day.day);
+            return (
+              <DayPlan
+                key={day.day}
+                day={day}
+                image={itineraryImages[idx]}
+                previousImage={itineraryImages[(idx + 1) % itineraryImages.length]}
+                detailFilter={activeSummary}
+                sectionRef={(node) => {
+                  sectionRefs.current[day.day] = node;
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>
   );
 }
 
-function DayPlan({ day, image, previousImage, sectionRef }) {
-  const details = buildDayDetailRows(day, image, previousImage);
+function DayPlan({ day, image, previousImage, detailFilter, sectionRef }) {
+  const details = buildDayDetailRows(day, image, previousImage).filter((detail) => detailMatchesSummary(detail, detailFilter));
   const includedItems = day.includes || [];
 
   return (
@@ -525,6 +570,43 @@ function Divider() {
   return <div className="border-t border-gray-200" />;
 }
 
+function buildItinerarySummaryItems(pkg) {
+  return [
+    { id: "plan", label: `${pkg.duration} Day Plan` },
+    { id: "flightTransfer", label: `${pkg.flightIncluded ? "2 Flights & " : ""}${Math.max(2, pkg.duration - 1)} Transfers` },
+    { id: "hotel", label: `${pkg.nights} Hotels` },
+    { id: "activity", label: `${pkg.duration + 1} Activities` },
+    { id: "meal", label: `${pkg.duration + 2} Meals` },
+  ];
+}
+
+function dayMatchesSummary(day, summaryId) {
+  if (summaryId === "plan") return true;
+  if (summaryId === "flightTransfer") return dayHasFlight(day) || dayHasTransfer(day);
+  if (summaryId === "hotel") return Boolean(day.hotel);
+  if (summaryId === "activity") return Boolean(day.activities?.length);
+  if (summaryId === "meal") return Boolean(day.meal);
+  return true;
+}
+
+function detailMatchesSummary(detail, summaryId) {
+  if (summaryId === "plan") return true;
+  if (summaryId === "flightTransfer") return ["Flight", "Transfer"].includes(detail.type);
+  if (summaryId === "hotel") return detail.type === "Hotel";
+  if (summaryId === "activity") return detail.type === "Activity";
+  if (summaryId === "meal") return detail.type === "Meal";
+  return true;
+}
+
+function dayHasFlight(day) {
+  return Boolean(day.flightIncluded && (day.isFirst || day.isLast));
+}
+
+function dayHasTransfer(day) {
+  const primaryActivity = day.activities?.[0] || {};
+  return /(arrival|departure|transfer|checkout)/i.test(primaryActivity.title || day.location);
+}
+
 function buildDayDetailRows(day, image, secondaryImage) {
   const primaryActivity = day.activities[0] || {};
   const secondaryActivity = day.activities[1] || primaryActivity;
@@ -532,21 +614,23 @@ function buildDayDetailRows(day, image, secondaryImage) {
   const secondaryActivityImage = selectDetailImage(`${secondaryActivity.title || ""} ${secondaryActivity.description || ""}`, secondaryImage || image);
   const rows = [];
 
-  if (day.day === 1) {
+  if (dayHasFlight(day)) {
     rows.push({
       type: "Flight",
       icon: <Plane size={18} />,
-      meta: `New Delhi to ${day.location.replace(" Arrival", "")}`,
-      title: "Arrival Flight",
-      description: `Board your flight and arrive at ${day.location.replace(" Arrival", "")}. Our representative will coordinate the onward journey.`,
+      meta: day.isLast ? `${day.location.replace(" Departure", "")} to New Delhi` : `New Delhi to ${day.location.replace(" Arrival", "")}`,
+      title: day.isLast ? "Return Flight" : "Arrival Flight",
+      description: day.isLast
+        ? `Board your return flight from ${day.location.replace(" Departure", "")} after checkout and transfer assistance.`
+        : `Board your flight and arrive at ${day.location.replace(" Arrival", "")}. Our representative will coordinate the onward journey.`,
       image: ITINERARY_IMAGE_POOLS.flight[0],
       duration: "Duration 1h 30m",
-      timing: "Morning to afternoon",
+      timing: day.isLast ? "Afternoon to evening" : "Morning to afternoon",
       note: "Cabin baggage included",
     });
   }
 
-  if (/(arrival|departure|transfer|checkout)/i.test(primaryActivity.title || day.location)) {
+  if (dayHasTransfer(day)) {
     rows.push({
       type: "Transfer",
       icon: <Car size={18} />,
@@ -760,11 +844,15 @@ function generateItinerary(pkg) {
 
     return {
       day,
+      isFirst,
+      isLast,
+      flightIncluded: Boolean(pkg.flightIncluded),
       location: isFirst ? `${destination} Arrival` : isLast ? `${destination} Departure` : location,
       meal: isFirst ? "Dinner" : isLast ? "Breakfast" : "Breakfast, Lunch & Dinner",
       hotel: isLast ? null : `${pkg.hotelCategory || 4}-star stay in ${location}`,
       includes: [
         ...(pkg.flightIncluded && isFirst ? ["1 Flight"] : []),
+        ...(pkg.flightIncluded && isLast ? ["1 Flight"] : []),
         ...(isLast ? ["1 Transfer"] : ["1 Hotel", "1 Transfer"]),
         "1 Activity",
         "1 Meal",
