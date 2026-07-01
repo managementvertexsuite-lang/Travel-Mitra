@@ -37,12 +37,15 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
     const [y, m, d] = payload.departureDate.split("-").map(Number)
     return new Date(y, m - 1, d)
   })
-  const [localTravelers, setLocalTravelers] = useState(payload.travelers || 2)
+  const [rooms, setRooms] = useState([{ adults: Math.max(1, payload.travelers || 2), children: 0 }])
   const [fromOpen, setFromOpen] = useState(false)
   const [toOpen, setToOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [travelersOpen, setTravelersOpen] = useState(false)
   const stripRef = useRef(null)
+
+  const localTravelers = rooms.reduce((sum, room) => sum + room.adults + room.children, 0)
+  const totalRooms = rooms.length
 
   const pageTitle = payload.categoryLabel
     ? payload.categoryLabel
@@ -90,6 +93,24 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
     setToOpen(false)
     setCalendarOpen(false)
     setTravelersOpen(false)
+  }
+
+  const updateRoom = (idx, field, delta) => {
+    setRooms((prev) =>
+      prev.map((room, roomIdx) => {
+        if (roomIdx !== idx) return room
+        const minValue = field === "adults" ? 1 : 0
+        return { ...room, [field]: Math.max(minValue, room[field] + delta) }
+      })
+    )
+  }
+
+  const addRoom = () => {
+    if (rooms.length < 5) setRooms((prev) => [...prev, { adults: 1, children: 0 }])
+  }
+
+  const removeRoom = (idx) => {
+    if (rooms.length > 1) setRooms((prev) => prev.filter((_, roomIdx) => roomIdx !== idx))
   }
 
   const handleReSearch = () => {
@@ -176,28 +197,65 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
             onClick={() => { setTravelersOpen((o) => !o); setFromOpen(false); setToOpen(false); setCalendarOpen(false) }}
           >
             <p className="text-[10px] text-blue-300 uppercase font-bold tracking-wider">Rooms &amp; Guests</p>
-            <p className="text-white font-bold text-[13px]">{localTravelers} Traveler{localTravelers > 1 ? "s" : ""}</p>
+            <p className="text-white font-bold text-[13px]">
+              {localTravelers} Guest{localTravelers > 1 ? "s" : ""}, {totalRooms} Room{totalRooms > 1 ? "s" : ""}
+            </p>
             {travelersOpen && (
               <div
-                className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl p-4 z-50 w-48"
+                className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl z-50 w-[320px] border border-gray-200"
                 onClick={(e) => e.stopPropagation()}
               >
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3">Travelers</p>
-                <div className="flex items-center justify-between">
+                <div className="p-4 space-y-3 max-h-[360px] overflow-y-auto">
+                  {rooms.map((room, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">ROOM {idx + 1}</p>
+                        {rooms.length > 1 && (
+                          <button
+                            onClick={() => removeRoom(idx)}
+                            className="text-[11px] text-red-500 hover:text-red-700 font-semibold"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <RoomGuestControl
+                          label="Adults"
+                          sublabel="Above 12 Years"
+                          value={room.adults}
+                          onDecrement={() => updateRoom(idx, "adults", -1)}
+                          onIncrement={() => updateRoom(idx, "adults", 1)}
+                        />
+                        <RoomGuestControl
+                          label="Children"
+                          sublabel="Below 12 Years"
+                          value={room.children}
+                          onDecrement={() => updateRoom(idx, "children", -1)}
+                          onIncrement={() => updateRoom(idx, "children", 1)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="px-4 pb-4 pt-3 border-t border-gray-100 flex gap-3">
                   <button
-                    onClick={() => setLocalTravelers((n) => Math.max(1, n - 1))}
-                    className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold text-lg transition-colors"
-                  >−</button>
-                  <span className="text-2xl font-black text-gray-900">{localTravelers}</span>
+                    onClick={addRoom}
+                    className="flex-1 py-2.5 border-2 border-blue-500 text-blue-600 rounded-lg font-bold text-[12px] hover:bg-blue-50 transition-colors"
+                  >
+                    ADD ANOTHER ROOM +
+                  </button>
                   <button
-                    onClick={() => setLocalTravelers((n) => Math.min(20, n + 1))}
-                    className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-bold text-lg transition-colors"
-                  >+</button>
+                    onClick={() => setTravelersOpen(false)}
+                    className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-bold text-[12px] hover:bg-blue-700 transition-colors"
+                  >
+                    APPLY
+                  </button>
                 </div>
               </div>
             )}
           </div>
-
           <div className="w-px h-8 bg-white/20 flex-shrink-0" />
 
           <button
@@ -207,6 +265,7 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
             SEARCH
           </button>
         </div>
+
       </div>
 
       {/* Banner — normal flow, 350px, text at top */}
@@ -232,9 +291,9 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
 
       {/* Packages card — pulled up 150px over the banner */}
       <div className="max-w-7xl mx-auto px-4 pb-6 -mt-[150px] relative z-10">
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(300px,360px)_1fr]">
-            <aside className="min-w-0 border-r border-gray-200 p-6">
+            <aside className="min-w-0 border-r border-gray-200 p-6 lg:sticky lg:top-36 lg:self-start lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto">
               <div className="mb-6 flex min-h-[44px] items-center">
                 <h2 className="text-2xl font-bold text-gray-900 leading-tight">
                   Filters
@@ -286,6 +345,30 @@ export default function HolidayResults({ payload, isLoading, onDestinationClick,
             </main>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function RoomGuestControl({ label, sublabel, value, onDecrement, onIncrement }) {
+  return (
+    <div>
+      <p className="text-[12px] font-semibold text-gray-700">{label}</p>
+      <p className="text-[10px] text-gray-400 mb-2">{sublabel}</p>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onDecrement}
+          className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-50 font-bold text-lg leading-none"
+        >
+          -
+        </button>
+        <span className="text-[18px] font-black text-black w-7 text-center">{String(value).padStart(2, "0")}</span>
+        <button
+          onClick={onIncrement}
+          className="w-8 h-8 border border-gray-300 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-50 font-bold text-lg leading-none"
+        >
+          +
+        </button>
       </div>
     </div>
   )

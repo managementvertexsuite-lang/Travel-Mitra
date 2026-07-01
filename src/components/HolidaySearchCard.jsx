@@ -10,6 +10,7 @@ import CalendarDropdown from "./CalendarDropdown";
 import { formatDate, formatDateISO, getToday } from "../utils/dateUtils";
 import { destinations } from "../data/destinations";
 import { CATEGORY_TABS } from "../utils/categoryPackages";
+import { getMegaMenuImage } from "../utils/megaMenuData";
 
 import banner1 from "../banners/banner1.png";
 import banner2 from "../banners/banner2.png";
@@ -52,10 +53,7 @@ const MEGA_MENU_DATA = {
 };
 
 const getDestImage = (name) => {
-  const d = destinations.find((d) =>
-    d.name.toLowerCase().includes(name.toLowerCase())
-  );
-  return d?.coverImage || (d?.gallery && d.gallery[0]) || null;
+  return getMegaMenuImage(name);
 };
 
 export default function HolidaySearchCard({
