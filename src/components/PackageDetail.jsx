@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+const HEADER_STICKY_TOP = 64;
+
 export default function PackageDetail({ package: pkg, onBack }) {
   if (!pkg) return null;
 
@@ -24,6 +26,20 @@ export default function PackageDetail({ package: pkg, onBack }) {
   const [activeImage, setActiveImage] = useState(0);
   const galleryImages = [...new Set([...(pkg.gallery || []), pkg.image].filter(Boolean))];
   const discount = Math.max(0, Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100));
+  const headerRef = useRef(null);
+  const [headerOffset, setHeaderOffset] = useState(198);
+
+  useEffect(() => {
+    const node = headerRef.current;
+    if (!node) return;
+
+    const updateOffset = () => setHeaderOffset(HEADER_STICKY_TOP + node.getBoundingClientRect().height);
+    updateOffset();
+
+    const observer = new ResizeObserver(updateOffset);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen">
@@ -59,7 +75,7 @@ export default function PackageDetail({ package: pkg, onBack }) {
         />
       )}
 
-      <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+      <div ref={headerRef} className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-[1200px] mx-auto px-4 pt-2">
           <button
             onClick={onBack}
@@ -96,12 +112,12 @@ export default function PackageDetail({ package: pkg, onBack }) {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <main className="lg:col-span-2">
-            {activeTab === "itinerary" && <ItineraryTab package={pkg} />}
+            {activeTab === "itinerary" && <ItineraryTab package={pkg} headerOffset={headerOffset} />}
             {activeTab === "policies" && <PoliciesTab />}
             {activeTab === "summary" && <SummaryTab package={pkg} />}
           </main>
           <aside className="lg:col-span-1">
-            <PriceSummary package={pkg} discount={discount} />
+            <PriceSummary package={pkg} discount={discount} headerOffset={headerOffset} />
           </aside>
         </div>
       </div>
@@ -191,9 +207,11 @@ function GalleryLightbox({ images, activeImage, setActiveImage, onClose, title }
   );
 }
 
-function ItineraryTab({ package: pkg }) {
+function ItineraryTab({ package: pkg, headerOffset }) {
   const days = useMemo(() => generateItinerary(pkg), [pkg]);
   const sectionRefs = useRef([]);
+  const summaryBarRef = useRef(null);
+  const [summaryBarHeight, setSummaryBarHeight] = useState(56);
   const [activeDay, setActiveDay] = useState(1);
   const [activeSummary, setActiveSummary] = useState("plan");
   const startDate = useMemo(() => resolveTripStartDate(pkg), [pkg]);
@@ -211,9 +229,23 @@ function ItineraryTab({ package: pkg }) {
     return datedDays.map((day, idx) => selectItineraryImage(day, pkg, usedImages, idx));
   }, [datedDays, pkg]);
 
+  const dayPlanOffset = headerOffset + summaryBarHeight;
+
+  useEffect(() => {
+    const node = summaryBarRef.current;
+    if (!node) return;
+
+    const updateHeight = () => setSummaryBarHeight(node.getBoundingClientRect().height);
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     const updateActiveDay = () => {
-      const viewportAnchor = 240;
+      const viewportAnchor = dayPlanOffset;
       let currentDay = datedDays[0]?.day || 1;
 
       visibleDays.forEach((day) => {
@@ -235,7 +267,7 @@ function ItineraryTab({ package: pkg }) {
       window.removeEventListener("scroll", updateActiveDay);
       window.removeEventListener("resize", updateActiveDay);
     };
-  }, [datedDays, visibleDays]);
+  }, [datedDays, visibleDays, dayPlanOffset]);
 
   useEffect(() => {
     const firstVisibleDay = visibleDays[0]?.day;
@@ -247,8 +279,7 @@ function ItineraryTab({ package: pkg }) {
   const scrollToDay = (dayNumber) => {
     const node = sectionRefs.current[dayNumber];
     if (!node) return;
-    const stickyOffset = 240;
-    const targetTop = node.getBoundingClientRect().top + window.scrollY - stickyOffset;
+    const targetTop = node.getBoundingClientRect().top + window.scrollY - dayPlanOffset;
     window.scrollTo({ top: targetTop, behavior: "smooth" });
   };
 
@@ -263,7 +294,11 @@ function ItineraryTab({ package: pkg }) {
 
   return (
     <div className="overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="sticky top-[198px] z-20 grid grid-cols-2 gap-3 border-b border-blue-100 bg-[#eaf7ff] px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm md:grid-cols-5">
+      <div
+        ref={summaryBarRef}
+        style={{ top: headerOffset }}
+        className="sticky z-20 grid grid-cols-2 gap-3 border-b border-blue-100 bg-[#eaf7ff] px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm md:grid-cols-5"
+      >
         {summaryItems.map((item) => {
           const isActive = activeSummary === item.id;
           return (
@@ -285,7 +320,7 @@ function ItineraryTab({ package: pkg }) {
 
       <div className="grid grid-cols-1 md:grid-cols-[184px_1fr]">
         <aside className="border-b border-gray-200 bg-[#fafafa] p-5 md:border-b-0 md:border-r">
-          <div className="sticky top-[286px]">
+          <div className="sticky" style={{ top: dayPlanOffset }}>
             <h3 className="mb-3 text-lg font-bold text-gray-800">Day Plan</h3>
             <div className="relative space-y-1">
               <div className="absolute left-[11px] top-4 bottom-4 w-px bg-gray-300" />
@@ -437,22 +472,19 @@ function SummaryTab({ package: pkg }) {
   return (
     <div className="space-y-6">
       <div className="border border-gray-200 rounded-xl bg-white overflow-hidden shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-[190px_1fr]">
-          <img src={pkg.gallery?.[1] || pkg.image} alt={pkg.destination} className="w-full h-full min-h-[190px] object-cover" />
-          <div className="p-5">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Trip Summary</h3>
-            <div className="overflow-hidden rounded-lg border border-gray-200">
-              <table className="w-full text-sm">
-                <tbody>
-                  {rows.map(([label, value]) => (
-                    <tr key={label} className="border-b border-gray-200 last:border-b-0">
-                      <th className="w-44 bg-gray-50 px-4 py-3 text-left font-bold text-gray-700">{label}</th>
-                      <td className="px-4 py-3 text-gray-900 font-medium">{value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        <div className="p-5">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Trip Summary</h3>
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <tbody>
+                {rows.map(([label, value]) => (
+                  <tr key={label} className="border-b border-gray-200 last:border-b-0">
+                    <th className="w-44 bg-gray-50 px-4 py-3 text-left font-bold text-gray-700">{label}</th>
+                    <td className="px-4 py-3 text-gray-900 font-medium">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -508,7 +540,7 @@ function IncludedCard({ title, tone, items }) {
   );
 }
 
-function PriceSummary({ package: pkg, discount }) {
+function PriceSummary({ package: pkg, discount, headerOffset }) {
   const travelers = 1;
   const coupons = [
     { code: "LASTMINUTE", discount: 402 },
@@ -523,7 +555,7 @@ function PriceSummary({ package: pkg, discount }) {
   const totalSavings = pkg.originalPrice - finalPrice;
 
   return (
-    <div className="sticky top-[198px] bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg space-y-4">
+    <div className="sticky bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg space-y-4" style={{ top: headerOffset }}>
       <div>
         <p className="text-sm text-gray-600 mb-2">Price per person</p>
         <div className="flex items-baseline gap-2 mb-1">

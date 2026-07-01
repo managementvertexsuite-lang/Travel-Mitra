@@ -1,5 +1,25 @@
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
+const WIDGET_SCRIPT_ID = "vertexsuite-travel-widget";
+
+function openTravelWidget() {
+  if (document.getElementById(WIDGET_SCRIPT_ID)) return;
+
+  const preload = document.createElement("link");
+  preload.rel = "preload";
+  preload.as = "script";
+  preload.href = "https://widget.vertexsuite.io/widget.js";
+  document.head.appendChild(preload);
+
+  const script = document.createElement("script");
+  script.id = WIDGET_SCRIPT_ID;
+  script.src = "https://widget.vertexsuite.io/widget.js";
+  script.dataset.widgetId = "69ce503c72295e75e449ca3e";
+  script.dataset.apiKey = "pk_de052aad424c4643b8cc9d4f";
+  script.setAttribute("v", "1.0.0+1");
+  document.body.appendChild(script);
+}
+
 export default function Footer() {
   return (
     <footer className="w-full flex flex-col mt-auto">
@@ -70,6 +90,18 @@ export default function Footer() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="bg-slate-950 text-slate-500 text-xs px-6 py-4 flex items-center justify-center gap-2">
+        <span>&copy; {new Date().getFullYear()} Travel Mitra. All rights reserved.</span>
+        <button
+          type="button"
+          onClick={openTravelWidget}
+          className="text-slate-500 hover:text-slate-400 transition-colors"
+        >
+          travel
+        </button>
       </div>
     </footer>
   );
