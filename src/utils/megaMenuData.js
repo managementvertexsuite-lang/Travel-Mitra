@@ -53,7 +53,7 @@ const FEATURED_IMAGE_FALLBACKS = {
   singapore: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=900&auto=format&fit=crop",
   "south africa": "https://images.unsplash.com/photo-1484318571209-661cf29a69c3?q=80&w=900&auto=format&fit=crop",
   "south india": "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?q=80&w=900&auto=format&fit=crop",
-  "sri lanka": "https://images.unsplash.com/photo-1588252333782-cb80119abd6d?q=80&w=900&auto=format&fit=crop",
+  "sri lanka": "https://images.unsplash.com/photo-1546708973-b339540b5162?q=80&w=900&auto=format&fit=crop",
   thailand: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=900&auto=format&fit=crop",
   vietnam: "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=900&auto=format&fit=crop",
 };

@@ -59,19 +59,37 @@ export default function PackageDetail({ package: pkg, onBack }) {
         />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 py-6 border-b border-gray-200">
-        <div className="flex gap-12">
-          {["itinerary", "policies", "summary"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-lg font-bold pb-4 capitalize transition-all ${
-                activeTab === tab ? "text-blue-600 border-b-4 border-blue-600" : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+      <div className="sticky top-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-[1200px] mx-auto px-4 pt-2">
+          <button
+            onClick={onBack}
+            className="mb-1 flex items-center gap-1 text-sm font-semibold text-blue-700 hover:text-blue-900"
+          >
+            <ChevronLeft size={16} /> Back to Results
+          </button>
+          <div className="min-w-0">
+            <h2 className="truncate text-2xl font-black leading-tight text-black">{pkg.name}</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-700">
+              <Badge icon={<Scissors size={14} />}>Customizable</Badge>
+              <Badge>{pkg.nights}N/{pkg.duration}D</Badge>
+              <span className="font-semibold">{pkg.itinerary || `${pkg.nights}N ${pkg.destination}`}</span>
+            </div>
+          </div>
+          <div className="mt-2 flex gap-12 overflow-x-auto">
+            {["itinerary", "policies", "summary"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`text-lg font-bold py-3 capitalize transition-all whitespace-nowrap border-b-4 ${
+                  activeTab === tab
+                    ? "text-blue-600 border-blue-600"
+                    : "text-gray-600 border-transparent hover:text-gray-900"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -195,7 +213,7 @@ function ItineraryTab({ package: pkg }) {
 
   useEffect(() => {
     const updateActiveDay = () => {
-      const viewportAnchor = 170;
+      const viewportAnchor = 240;
       let currentDay = datedDays[0]?.day || 1;
 
       visibleDays.forEach((day) => {
@@ -227,7 +245,11 @@ function ItineraryTab({ package: pkg }) {
   }, [activeDay, visibleDays]);
 
   const scrollToDay = (dayNumber) => {
-    sectionRefs.current[dayNumber]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const node = sectionRefs.current[dayNumber];
+    if (!node) return;
+    const stickyOffset = 240;
+    const targetTop = node.getBoundingClientRect().top + window.scrollY - stickyOffset;
+    window.scrollTo({ top: targetTop, behavior: "smooth" });
   };
 
   const selectSummary = (summaryId) => {
@@ -241,7 +263,7 @@ function ItineraryTab({ package: pkg }) {
 
   return (
     <div className="overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="grid grid-cols-2 gap-3 bg-[#eaf7ff] px-5 py-4 text-sm font-semibold text-gray-800 md:grid-cols-5">
+      <div className="sticky top-[198px] z-20 grid grid-cols-2 gap-3 border-b border-blue-100 bg-[#eaf7ff] px-5 py-3 text-sm font-semibold text-gray-800 shadow-sm md:grid-cols-5">
         {summaryItems.map((item) => {
           const isActive = activeSummary === item.id;
           return (
@@ -263,7 +285,7 @@ function ItineraryTab({ package: pkg }) {
 
       <div className="grid grid-cols-1 md:grid-cols-[184px_1fr]">
         <aside className="border-b border-gray-200 bg-[#fafafa] p-5 md:border-b-0 md:border-r">
-          <div className="sticky top-24">
+          <div className="sticky top-[286px]">
             <h3 className="mb-3 text-lg font-bold text-gray-800">Day Plan</h3>
             <div className="relative space-y-1">
               <div className="absolute left-[11px] top-4 bottom-4 w-px bg-gray-300" />
@@ -501,7 +523,7 @@ function PriceSummary({ package: pkg, discount }) {
   const totalSavings = pkg.originalPrice - finalPrice;
 
   return (
-    <div className="sticky top-32 bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg space-y-4">
+    <div className="sticky top-[198px] bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-lg space-y-4">
       <div>
         <p className="text-sm text-gray-600 mb-2">Price per person</p>
         <div className="flex items-baseline gap-2 mb-1">
